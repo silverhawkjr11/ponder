@@ -5,14 +5,14 @@ import 'dart:ui' as ui;
 import 'package:connect_the_dots/game/level.dart';
 import 'package:connect_the_dots/game/zip_board.dart';
 import 'package:connect_the_dots/game/zip_generator.dart';
-import 'package:connect_the_dots/theme/mocha.dart';
+import 'package:connect_the_dots/theme/palette.dart';
 import 'package:connect_the_dots/game/chess_puzzle.dart';
 import 'package:connect_the_dots/game/chess_session.dart';
-import 'package:connect_the_dots/game/sudoku.dart';
 import 'package:connect_the_dots/services/stats.dart';
 import 'package:connect_the_dots/ui/chess_board_widget.dart';
 import 'package:connect_the_dots/ui/sudoku_screen.dart';
 import 'package:connect_the_dots/ui/home_screen.dart';
+import 'package:connect_the_dots/ui/settings_screen.dart';
 import 'package:connect_the_dots/ui/zip_board_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dartchess/dartchess.dart' show Square;
@@ -28,10 +28,11 @@ Future<void> snap(WidgetTester tester, Widget w, String name, Size size) async {
   await tester.pumpWidget(
     MaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: buildMochaTheme(),
+      theme: buildTheme(Pal.p),
       home: RepaintBoundary(key: key, child: w),
     ),
   );
+  await tester.pump(const Duration(milliseconds: 300));
   await tester.pump(const Duration(milliseconds: 300));
   final boundary = key.currentContext!.findRenderObject() as RenderRepaintBoundary;
   final img = await boundary.toImage(pixelRatio: 1);
@@ -93,7 +94,7 @@ void main() {
     final key = GlobalKey();
     await tester.pumpWidget(MaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: buildMochaTheme(),
+      theme: buildTheme(Pal.p),
       home: RepaintBoundary(
         key: key,
         child: Scaffold(
@@ -124,7 +125,7 @@ void main() {
     await tester.runAsync(() async {
       await tester.pumpWidget(MaterialApp(
         debugShowCheckedModeBanner: false,
-        theme: buildMochaTheme(),
+        theme: buildTheme(Pal.p),
         home: RepaintBoundary(key: key, child: SudokuScreen(difficulty: Difficulty.medium, stats: stats)),
       ));
       for (var i = 0; i < 30; i++) {
@@ -152,8 +153,16 @@ void main() {
   });
 
   testWidgets('home 4 modes', (tester) async {
-    SharedPreferences.setMockInitialValues({'last_mode': 'chess', 'chess_rating': 1340, 'chess_solved_easy': 12});
+    SharedPreferences.setMockInitialValues({
+      'last_mode': 'chess', 'chess_rating': 1340, 'chess_solved_easy': 12,
+      'save_sudoku': '{"d":"hard","seed":5,"ms":312000,"progress":"40/81 filled","values":[],"notes":[]}',
+      'save_chess': '{"d":"medium","ms":42000,"progress":"move 2 of 3","id":"x","step":3}',
+    });
     final stats = await Stats.load();
-    await tester.runAsync(() => snap(tester, HomeScreen(stats: stats), 'home4', const Size(430, 980)));
+    await tester.runAsync(() => snap(tester, HomeScreen(stats: stats), 'home4', const Size(430, 1180)));
+    themeController.palette = Palette.latte;
+    await tester.runAsync(() => snap(tester, HomeScreen(stats: stats), 'home_latte', const Size(430, 1180)));
+    await tester.runAsync(() => snap(tester, SettingsScreen(stats: stats), 'settings_latte', const Size(430, 1180)));
+    themeController.palette = Palette.mocha;
   });
 }

@@ -173,6 +173,31 @@ class SudokuBoard extends ChangeNotifier {
     notifyListeners();
   }
 
+  Map<String, dynamic> toJson() => {
+    'values': values,
+    'notes': [for (final n in notes) n.join()],
+    'mistakes': mistakes,
+    'hints': hintsUsed,
+  };
+
+  void restore(Map<String, dynamic> data) {
+    try {
+      final v = (data['values'] as List).cast<int>();
+      final n = (data['notes'] as List).cast<String>();
+      if (v.length != 81 || n.length != 81) return;
+      for (var i = 0; i < 81; i++) {
+        if (!isGiven(i)) values[i] = v[i];
+        notes[i] = {for (final ch in n[i].split('')) int.parse(ch)};
+      }
+      mistakes = (data['mistakes'] as int?) ?? 0;
+      hintsUsed = (data['hints'] as int?) ?? 0;
+      _checkWin();
+    } catch (_) {
+      _reset();
+    }
+    notifyListeners();
+  }
+
   void select(int i) {
     selected = selected == i ? null : i;
     notifyListeners();

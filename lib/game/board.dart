@@ -83,6 +83,47 @@ class Board extends ChangeNotifier {
     notifyListeners();
   }
 
+  // ---- Persistence -------------------------------------------------------
+
+  Map<String, dynamic> toJson() => {
+    'moves': _moves,
+    'hints': _hintsUsed,
+    'paths': [
+      for (final p in _paths) [for (final c in p) ...[c.r, c.c]],
+    ],
+  };
+
+  /// Restores drawn pipes from [toJson] output. Invalid data is ignored.
+  void restore(Map<String, dynamic> data) {
+    try {
+      _reset();
+      final paths = (data['paths'] as List).cast<List>();
+      for (var k = 0; k < paths.length && k < colorCount; k++) {
+        final flat = paths[k].cast<int>();
+        final cells = [for (var i = 0; i + 1 < flat.length; i += 2) Cell(flat[i], flat[i + 1])];
+        if (cells.isEmpty) continue;
+        if (_endpoint[cells.first.r][cells.first.c] != k) continue;
+        var ok = true;
+        for (var i = 1; i < cells.length; i++) {
+          if (!cells[i].isAdjacent(cells[i - 1]) || !inBounds(cells[i])) ok = false;
+          final o = _owner[cells[i].r][cells[i].c];
+          if (o != -1 && o != k) ok = false;
+        }
+        if (!ok) continue;
+        for (final c in cells) {
+          _owner[c.r][c.c] = k;
+        }
+        _paths[k] = cells;
+      }
+      _moves = (data['moves'] as int?) ?? 0;
+      _hintsUsed = (data['hints'] as int?) ?? 0;
+      _checkWin();
+    } catch (_) {
+      _reset();
+    }
+    notifyListeners();
+  }
+
   // ---- Drag handling -----------------------------------------------------
 
   /// Finger down on [cell]. Returns true if a drag started.

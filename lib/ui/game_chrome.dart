@@ -3,7 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../game/level.dart';
-import '../theme/mocha.dart';
+import '../theme/palette.dart';
 import 'widgets.dart';
 
 /// Pieces shared by both game screens: header, stat tiles, win card, loader.
@@ -12,7 +12,7 @@ class GameTopBar extends StatelessWidget {
   final GameMode mode;
   final Difficulty difficulty;
   final int? size;
-  final String time;
+  final String? time;
   final int? seed;
   final String? subtitle;
   const GameTopBar({
@@ -51,8 +51,8 @@ class GameTopBar extends StatelessWidget {
                 Text(
                   subtitle ??
                       (size == null ? 'Generating…' : '$size × $size   ·   #$seed'),
-                  style: const TextStyle(
-                    color: Mocha.overlay1,
+                  style: TextStyle(
+                    color: Pal.overlay1,
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                   ),
@@ -60,18 +60,19 @@ class GameTopBar extends StatelessWidget {
               ],
             ),
           ),
+          if (time != null)
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             decoration: BoxDecoration(
-              color: Mocha.mantle,
+              color: Pal.mantle,
               borderRadius: BorderRadius.circular(14),
             ),
             child: Row(
               children: [
-                const Icon(Icons.timer_outlined, size: 18, color: Mocha.subtext0),
+                Icon(Icons.timer_outlined, size: 18, color: Pal.subtext0),
                 const SizedBox(width: 6),
                 Text(
-                  time,
+                  time!,
                   style: const TextStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.w700,
@@ -90,12 +91,12 @@ class GameTopBar extends StatelessWidget {
 class StatTile extends StatelessWidget {
   final String label;
   final String value;
-  final Color color;
+  final Color? color;
   const StatTile({
     super.key,
     required this.label,
     required this.value,
-    this.color = Mocha.text,
+    this.color,
   });
 
   @override
@@ -108,15 +109,15 @@ class StatTile extends StatelessWidget {
             style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.w800,
-              color: color,
+              color: color ?? Pal.text,
               fontFeatures: const [FontFeature.tabularFigures()],
             ),
           ),
           Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12,
-              color: Mocha.overlay1,
+              color: Pal.overlay1,
               fontWeight: FontWeight.w600,
               letterSpacing: 1.2,
             ),
@@ -186,7 +187,7 @@ class WinOverlay extends StatelessWidget {
       duration: const Duration(milliseconds: 420),
       curve: Curves.easeOutBack,
       builder: (context, t, child) => Container(
-        color: Mocha.crust.withValues(alpha: 0.62 * t.clamp(0, 1)),
+        color: Pal.crust.withValues(alpha: 0.62 * t.clamp(0, 1)),
         alignment: Alignment.center,
         child: Transform.scale(
           scale: 0.85 + 0.15 * t,
@@ -203,7 +204,7 @@ class WinOverlay extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  for (final c in [Mocha.red, Mocha.yellow, Mocha.green, Mocha.blue, Mocha.mauve])
+                  for (final c in [Pal.red, Pal.yellow, Pal.green, Pal.blue, Pal.mauve])
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 5),
                       child: Dot(c, size: 12),
@@ -221,8 +222,8 @@ class WinOverlay extends StatelessWidget {
                   child: Text(
                     subtitle!,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Mocha.subtext0,
+                    style: TextStyle(
+                      color: Pal.subtext0,
                       fontWeight: FontWeight.w600,
                       fontSize: 14,
                     ),
@@ -234,13 +235,13 @@ class WinOverlay extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     decoration: BoxDecoration(
-                      color: Mocha.yellow.withValues(alpha: 0.18),
+                      color: Pal.yellow.withValues(alpha: 0.18),
                       borderRadius: BorderRadius.circular(999),
                     ),
-                    child: const Text(
+                    child: Text(
                       'New best time',
                       style: TextStyle(
-                        color: Mocha.yellow,
+                        color: Pal.yellow,
                         fontWeight: FontWeight.w700,
                         fontSize: 13,
                       ),
@@ -263,9 +264,9 @@ class WinOverlay extends StatelessWidget {
                         ),
                         Text(
                           label,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 12,
-                            color: Mocha.overlay1,
+                            color: Pal.overlay1,
                             fontWeight: FontWeight.w600,
                             letterSpacing: 1.2,
                           ),
@@ -280,18 +281,18 @@ class WinOverlay extends StatelessWidget {
                 child: PillButton(
                   icon: Icons.arrow_forward_rounded,
                   label: 'Next puzzle',
-                  color: Mocha.mauve,
-                  foreground: Mocha.crust,
+                  color: Pal.mauve,
+                  foreground: Pal.crust,
                   onPressed: onNext,
                 ),
               ),
               const SizedBox(height: 8),
               TextButton(
                 onPressed: onHome,
-                child: const Text(
+                child: Text(
                   'Home',
                   style: TextStyle(
-                    color: Mocha.subtext0,
+                    color: Pal.subtext0,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -327,7 +328,7 @@ class _GeneratingDotsState extends State<GeneratingDots>
 
   @override
   Widget build(BuildContext context) {
-    const colors = [Mocha.mauve, Mocha.blue, Mocha.green];
+    final colors = [Pal.mauve, Pal.blue, Pal.green];
     return Center(
       child: AnimatedBuilder(
         animation: _c,
@@ -356,24 +357,40 @@ class _GeneratingDotsState extends State<GeneratingDots>
 class BoardArea extends StatelessWidget {
   final Widget board;
   final Widget stats;
-  const BoardArea({super.key, required this.board, required this.stats});
+  final double reserve;
+  const BoardArea({super.key, required this.board, required this.stats, this.reserve = 104});
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, c) {
-        final side = math.min(c.maxWidth - 36, c.maxHeight - 110);
+        final side = math.min(c.maxWidth - 20, c.maxHeight - reserve);
         return Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               SizedBox(width: side, height: side, child: board),
-              const SizedBox(height: 28),
+              const SizedBox(height: 20),
               stats,
             ],
           ),
         );
       },
     );
+  }
+}
+
+/// Stopwatch with a resumable offset.
+class GameClock {
+  final Stopwatch _sw = Stopwatch();
+  int base = 0;
+  int get ms => base + _sw.elapsedMilliseconds;
+  void start() => _sw.start();
+  void stop() => _sw.stop();
+  void reset({int from = 0}) {
+    base = from;
+    _sw
+      ..reset()
+      ..start();
   }
 }

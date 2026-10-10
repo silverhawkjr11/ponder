@@ -1,32 +1,32 @@
 import 'package:flutter/material.dart';
 
-import '../theme/mocha.dart';
+import '../theme/palette.dart';
 
 /// Rounded surface card used across screens.
 class MochaCard extends StatelessWidget {
   final Widget child;
   final VoidCallback? onTap;
   final EdgeInsetsGeometry padding;
-  final Color color;
+  final Color? color;
 
   const MochaCard({
     super.key,
     required this.child,
     this.onTap,
     this.padding = const EdgeInsets.all(18),
-    this.color = Mocha.mantle,
+    this.color,
   });
 
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: color,
+      color: color ?? Pal.mantle,
       borderRadius: BorderRadius.circular(22),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
-        splashColor: Mocha.surface1.withValues(alpha: 0.4),
-        highlightColor: Mocha.surface0.withValues(alpha: 0.5),
+        splashColor: Pal.surface1.withValues(alpha: 0.4),
+        highlightColor: Pal.surface0.withValues(alpha: 0.5),
         child: Padding(padding: padding, child: child),
       ),
     );
@@ -38,8 +38,8 @@ class PillButton extends StatelessWidget {
   final IconData icon;
   final String label;
   final VoidCallback? onPressed;
-  final Color color;
-  final Color foreground;
+  final Color? color;
+  final Color? foreground;
   final bool filled;
 
   const PillButton({
@@ -47,14 +47,16 @@ class PillButton extends StatelessWidget {
     required this.icon,
     required this.label,
     this.onPressed,
-    this.color = Mocha.surface0,
-    this.foreground = Mocha.text,
+    this.color,
+    this.foreground,
     this.filled = false,
   });
 
   @override
   Widget build(BuildContext context) {
     final enabled = onPressed != null;
+    final color = this.color ?? Pal.surface0;
+    final foreground = this.foreground ?? Pal.text;
     return Opacity(
       opacity: enabled ? 1 : 0.45,
       child: Material(

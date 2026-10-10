@@ -63,6 +63,31 @@ class ZipBoard extends ChangeNotifier {
     notifyListeners();
   }
 
+  Map<String, dynamic> toJson() => {
+    'moves': _moves,
+    'hints': _hintsUsed,
+    'path': [for (final c in _path) ...[c.r, c.c]],
+  };
+
+  void restore(Map<String, dynamic> data) {
+    try {
+      _reset();
+      final flat = (data['path'] as List).cast<int>();
+      final cells = [for (var i = 0; i + 1 < flat.length; i += 2) Cell(flat[i], flat[i + 1])];
+      if (cells.isNotEmpty && cells.first == _path.first) {
+        for (final c in cells.skip(1)) {
+          if (!_canStep(head, c)) break;
+          _step(c);
+        }
+      }
+      _moves = (data['moves'] as int?) ?? 0;
+      _hintsUsed = (data['hints'] as int?) ?? 0;
+    } catch (_) {
+      _reset();
+    }
+    notifyListeners();
+  }
+
   bool beginDrag(Cell cell) {
     if (_won || !inBounds(cell)) return false;
     if (_visited[cell.r][cell.c]) {

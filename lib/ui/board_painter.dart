@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 
 import '../game/board.dart';
 import '../game/level.dart';
-import '../theme/mocha.dart';
+import '../theme/palette.dart';
 
 /// Paints the whole board: cell tints, grid, pipes, dots and effects.
 class BoardPainter extends CustomPainter {
@@ -30,7 +30,7 @@ class BoardPainter extends CustomPainter {
     // Backplate.
     canvas.drawRRect(
       RRect.fromRectAndRadius(boardRect.inflate(cell * 0.12), r),
-      Paint()..color = Mocha.mantle,
+      Paint()..color = Pal.mantle,
     );
 
     Offset center(Cell c) => Offset((c.c + 0.5) * cell, (c.r + 0.5) * cell);
@@ -41,7 +41,7 @@ class BoardPainter extends CustomPainter {
       for (var col = 0; col < n; col++) {
         final owner = board.ownerAt(Cell(row, col));
         if (owner == -1) continue;
-        final base = Mocha.flows[owner];
+        final base = Pal.flows[owner];
         final done = board.isComplete(owner);
         tint.color = base.withValues(alpha: done ? 0.22 : 0.14);
         final rect = Rect.fromLTWH(col * cell, row * cell, cell, cell)
@@ -54,7 +54,7 @@ class BoardPainter extends CustomPainter {
     }
 
     // Faint grid dots at intersections, lighter than lines.
-    final gridPaint = Paint()..color = Mocha.surface1.withValues(alpha: 0.55);
+    final gridPaint = Paint()..color = Pal.surface1.withValues(alpha: 0.55);
     for (var i = 1; i < n; i++) {
       for (var j = 1; j < n; j++) {
         canvas.drawCircle(Offset(i * cell, j * cell), cell * 0.035, gridPaint);
@@ -66,7 +66,7 @@ class BoardPainter extends CustomPainter {
     for (var color = 0; color < board.colorCount; color++) {
       final path = board.pathOf(color);
       if (path.length < 2) continue;
-      final c = Mocha.flows[color];
+      final c = Pal.flows[color];
       final active = board.active == color;
       final done = board.isComplete(color);
       final p = Path()..moveTo(center(path.first).dx, center(path.first).dy);
@@ -102,7 +102,7 @@ class BoardPainter extends CustomPainter {
     final radius = cell * 0.31;
     for (var color = 0; color < board.colorCount; color++) {
       final (a, b) = board.level.endpoints[color];
-      final c = Mocha.flows[color];
+      final c = Pal.flows[color];
       final done = board.isComplete(color);
       final pulse = pulses[color];
       for (final e in [a, b]) {
@@ -140,7 +140,7 @@ class BoardPainter extends CustomPainter {
             o,
             radius + cell * 0.07,
             Paint()
-              ..color = Mocha.text.withValues(alpha: 0.5)
+              ..color = Pal.text.withValues(alpha: 0.5)
               ..style = PaintingStyle.stroke
               ..strokeWidth = max(1.5, cell * 0.035),
           );

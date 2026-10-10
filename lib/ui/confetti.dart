@@ -2,7 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
-import '../theme/mocha.dart';
+import '../theme/palette.dart';
 
 /// A short burst of falling Mocha-coloured confetti for the win moment.
 class Confetti extends StatefulWidget {
@@ -23,7 +23,7 @@ class _Particle {
         size = 6 + rng.nextDouble() * 7,
         drift = (rng.nextDouble() - 0.5) * 0.25,
         spin = (rng.nextDouble() - 0.5) * 12,
-        color = Mocha.flows[rng.nextInt(Mocha.flows.length)],
+        color = Pal.flows[rng.nextInt(Pal.flows.length)],
         round = rng.nextBool();
 }
 

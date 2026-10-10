@@ -7,7 +7,7 @@ import '../game/board.dart';
 import '../game/generator.dart';
 import '../game/level.dart';
 import '../services/stats.dart';
-import '../theme/mocha.dart';
+import '../theme/palette.dart';
 import 'board_widget.dart';
 import 'confetti.dart';
 import 'game_chrome.dart';
@@ -16,13 +16,13 @@ import 'game_chrome.dart';
 class GameScreen extends StatefulWidget {
   final Difficulty difficulty;
   final Stats stats;
-  final int? seed;
+  final Map<String, dynamic>? resume;
 
   const GameScreen({
     super.key,
     required this.difficulty,
     required this.stats,
-    this.seed,
+    this.resume,
   });
 
   @override
@@ -32,7 +32,7 @@ class GameScreen extends StatefulWidget {
 class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   Board? _board;
   int _generation = 0;
-  final Stopwatch _clock = Stopwatch();
+  final GameClock _clock = GameClock();
   Timer? _tick;
   bool _showWin = false;
   bool _newBest = false;
@@ -45,26 +45,29 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     _tick = Timer.periodic(const Duration(milliseconds: 500), (_) {
       if (mounted && _board != null && !_board!.won) setState(() {});
     });
-    _load(seed: widget.seed);
+    _load(resume: widget.resume);
   }
 
-  Future<void> _load({int? seed}) async {
+  Future<void> _load({Map<String, dynamic>? resume}) async {
     final gen = ++_generation;
     final old = _board;
     setState(() => _board = null);
     old?.removeListener(_onBoard);
     old?.dispose();
-    final level = await LevelGenerator.generateAsync(widget.difficulty, seed: seed);
+    if (resume == null) widget.stats.clearSave(GameMode.flow);
+    final level = await LevelGenerator.generateAsync(
+      widget.difficulty,
+      seed: resume?['seed'] as int?,
+    );
     if (!mounted || gen != _generation) return;
-    final board = Board(level, requireFill: widget.stats.requireFill)
-      ..addListener(_onBoard);
+    final board = Board(level, requireFill: widget.stats.requireFill);
+    if (resume != null) board.restore(resume);
+    board.addListener(_onBoard);
     setState(() {
       _board = board;
       _showWin = false;
       _newBest = false;
-      _clock
-        ..reset()
-        ..start();
+      _clock.reset(from: (resume?['ms'] as int?) ?? 0);
     });
   }
 
@@ -72,6 +75,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _tick?.cancel();
+    _persist();
     _board?.removeListener(_onBoard);
     _board?.dispose();
     super.dispose();
@@ -83,22 +87,41 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
       if (_board != null && !_board!.won) _clock.start();
     } else {
       _clock.stop();
+      _persist();
     }
   }
 
+  void _persist() {
+    final b = _board;
+    if (b == null) return;
+    if (b.won) {
+      widget.stats.clearSave(GameMode.flow);
+      return;
+    }
+    widget.stats.saveGame(GameMode.flow, {
+      'd': widget.difficulty.name,
+      'seed': b.level.seed,
+      'ms': _clock.ms,
+      'progress': '${b.completedCount}/${b.colorCount} flows',
+      ...b.toJson(),
+    });
+  }
+
   void _onBoard() {
-    if (mounted) setState(() {});
+    if (!mounted) return;
+    setState(() {});
+    _persist();
   }
 
   Future<void> _onWin() async {
     final board = _board!;
     _clock.stop();
-    final ms = _clock.elapsedMilliseconds;
+    widget.stats.clearSave(GameMode.flow);
     final perfect = board.moves == board.colorCount;
     final best = await widget.stats.recordWin(
       GameMode.flow,
       widget.difficulty,
-      ms: ms,
+      ms: _clock.ms,
       perfect: perfect,
       usedHints: board.hintsUsed > 0,
     );
@@ -116,9 +139,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     _board?.restart();
     setState(() {
       _showWin = false;
-      _clock
-        ..reset()
-        ..start();
+      _clock.reset();
     });
   }
 
@@ -141,7 +162,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                   mode: GameMode.flow,
                   difficulty: widget.difficulty,
                   size: board?.level.size,
-                  time: formatMs(_clock.elapsedMilliseconds),
+                  time: widget.stats.showTimer ? formatMs(_clock.ms) : null,
                   seed: board?.level.seed,
                 ),
                 Expanded(
@@ -160,24 +181,24 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                                 StatTile(
                                   label: 'flows',
                                   value: '${board.completedCount}/${board.colorCount}',
-                                  color: Mocha.mauve,
+                                  color: Pal.mauve,
                                 ),
                                 StatTile(
                                   label: 'filled',
                                   value: '${(board.fillFraction * 100).round()}%',
-                                  color: Mocha.blue,
+                                  color: Pal.blue,
                                 ),
                                 StatTile(
                                   label: 'moves',
                                   value: '${board.moves}',
-                                  color: Mocha.peach,
+                                  color: Pal.peach,
                                 ),
                               ],
                             ),
                           ),
                         ),
                 ),
-                const SizedBox(height: 18),
+                const SizedBox(height: 14),
                 GameButtons(
                   onRestart: board == null || won ? null : _restart,
                   onHint: board == null || won ? null : _hint,
@@ -194,7 +215,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                       ? 'Perfect!'
                       : 'Solved!',
                   stats: [
-                    ('time', formatMs(_clock.elapsedMilliseconds)),
+                    ('time', formatMs(_clock.ms)),
                     ('moves', '${board.moves}'),
                     ('hints', '${board.hintsUsed}'),
                   ],

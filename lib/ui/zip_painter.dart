@@ -5,14 +5,14 @@ import 'package:flutter/material.dart';
 
 import '../game/level.dart';
 import '../game/zip_board.dart';
-import '../theme/mocha.dart';
+import '../theme/palette.dart';
 
 class ZipPainter extends CustomPainter {
   final ZipBoard board;
   final Map<int, double> pulses; // number -> 0..1
   final double winGlow;
 
-  static const Color pathColor = Mocha.mauve;
+  static Color pathColor = Pal.mauve;
 
   ZipPainter({
     required this.board,
@@ -32,7 +32,7 @@ class ZipPainter extends CustomPainter {
         boardRect.inflate(cell * 0.12),
         Radius.circular(cell * 0.28),
       ),
-      Paint()..color = Mocha.mantle,
+      Paint()..color = Pal.mantle,
     );
 
     Offset center(Cell c) => Offset((c.c + 0.5) * cell, (c.r + 0.5) * cell);
@@ -54,7 +54,7 @@ class ZipPainter extends CustomPainter {
     }
 
     // Grid dots.
-    final gridPaint = Paint()..color = Mocha.surface1.withValues(alpha: 0.55);
+    final gridPaint = Paint()..color = Pal.surface1.withValues(alpha: 0.55);
     for (var i = 1; i < n; i++) {
       for (var j = 1; j < n; j++) {
         canvas.drawCircle(Offset(i * cell, j * cell), cell * 0.035, gridPaint);
@@ -95,7 +95,7 @@ class ZipPainter extends CustomPainter {
 
     // Walls.
     final wallPaint = Paint()
-      ..color = Mocha.text.withValues(alpha: 0.9)
+      ..color = Pal.text.withValues(alpha: 0.9)
       ..strokeWidth = max(3, cell * 0.09)
       ..strokeCap = StrokeCap.round;
     for (var r = 0; r < n; r++) {
@@ -152,7 +152,7 @@ class ZipPainter extends CustomPainter {
       canvas.drawCircle(
         o,
         radius,
-        Paint()..color = done ? pathColor : Mocha.surface1,
+        Paint()..color = done ? pathColor : Pal.surface1,
       );
       if (!done && num == next && !board.won) {
         canvas.drawCircle(
@@ -168,7 +168,7 @@ class ZipPainter extends CustomPainter {
         text: TextSpan(
           text: '$num',
           style: TextStyle(
-            color: done ? Mocha.crust : Mocha.text,
+            color: done ? Pal.crust : Pal.text,
             fontSize: cell * (num >= 10 ? 0.3 : 0.36),
             fontWeight: FontWeight.w800,
             fontFamily: 'Nunito',

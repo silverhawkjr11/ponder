@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../game/chess_session.dart';
-import '../theme/mocha.dart';
+import '../theme/palette.dart';
 
 /// Animated chess board: pieces slide, captures fade, selection lifts the
 /// piece, wrong moves shake the board, check pulses, and the solved line glows.
@@ -13,8 +13,12 @@ class ChessBoardWidget extends StatefulWidget {
   final ChessSession session;
   const ChessBoardWidget({super.key, required this.session});
 
-  static const light = Color(0xFF6E7290);
-  static const dark = Color(0xFF454860);
+  static Color get light => Pal.p.light
+      ? Pal.surface1
+      : Color.lerp(Pal.overlay0, Pal.lavender, 0.08)!;
+  static Color get dark => Pal.p.light
+      ? Pal.overlay0
+      : Color.lerp(Pal.surface1, Pal.lavender, 0.04)!;
 
   @override
   State<ChessBoardWidget> createState() => _ChessBoardWidgetState();
@@ -147,8 +151,9 @@ class _ChessBoardWidgetState extends State<ChessBoardWidget>
         Square? bestSq;
         var best = 1 << 20;
         remaining.forEach((rs, rv) {
-          if (rv.piece.color != piece.color || rv.piece.role != piece.role)
+          if (rv.piece.color != piece.color || rv.piece.role != piece.role) {
             return;
+          }
           final d = (rs.file - sq.file).abs() + (rs.rank - sq.rank).abs();
           if (d < best) {
             best = d;
@@ -239,7 +244,7 @@ class _ChessBoardWidgetState extends State<ChessBoardWidget>
                         ? BoxDecoration(
                             boxShadow: [
                               BoxShadow(
-                                color: Mocha.crust.withValues(alpha: 0.45),
+                                color: Pal.crust.withValues(alpha: 0.45),
                                 blurRadius: sq * 0.25,
                                 offset: Offset(0, sq * 0.08),
                               ),
@@ -270,11 +275,11 @@ class _ChessBoardWidgetState extends State<ChessBoardWidget>
                     height: side,
                     padding: EdgeInsets.all(frame),
                     decoration: BoxDecoration(
-                      color: Mocha.mantle,
+                      color: Pal.mantle,
                       borderRadius: BorderRadius.circular(side * 0.045),
                       boxShadow: [
                         BoxShadow(
-                          color: (session.solved ? Mocha.green : Mocha.mauve)
+                          color: (session.solved ? Pal.green : Pal.mauve)
                               .withValues(
                                 alpha: session.solved
                                     ? 0.25 * _solve.value
@@ -284,7 +289,7 @@ class _ChessBoardWidgetState extends State<ChessBoardWidget>
                           spreadRadius: 2,
                         ),
                         BoxShadow(
-                          color: Mocha.crust.withValues(alpha: 0.5),
+                          color: Pal.crust.withValues(alpha: 0.5),
                           blurRadius: 18,
                           offset: const Offset(0, 8),
                         ),
@@ -421,8 +426,8 @@ class _SquaresPainter extends CustomPainter {
     final last = session.lastMove;
     if (last != null) {
       final c = session.solved
-          ? Color.lerp(Mocha.yellow, Mocha.green, solve)!
-          : Mocha.yellow;
+          ? Color.lerp(Pal.yellow, Pal.green, solve)!
+          : Pal.yellow;
       tint(last.from, c.withValues(alpha: 0.26));
       tint(last.to, c.withValues(alpha: 0.38));
     }
@@ -436,19 +441,19 @@ class _SquaresPainter extends CustomPainter {
         Paint()
           ..shader = RadialGradient(
             colors: [
-              Mocha.red.withValues(alpha: 0.7 + 0.2 * pulse),
-              Mocha.red.withValues(alpha: 0),
+              Pal.red.withValues(alpha: 0.7 + 0.2 * pulse),
+              Pal.red.withValues(alpha: 0),
             ],
           ).createShader(Rect.fromCircle(center: center, radius: r)),
       );
     }
     final wrong = session.wrongMove;
     if (wrong != null) {
-      tint(wrong.from, Mocha.red.withValues(alpha: 0.35));
-      tint(wrong.to, Mocha.red.withValues(alpha: 0.5));
+      tint(wrong.from, Pal.red.withValues(alpha: 0.35));
+      tint(wrong.to, Pal.red.withValues(alpha: 0.5));
     }
     final hint = session.hintFrom;
-    if (hint != null) tint(hint, Mocha.green.withValues(alpha: 0.45));
+    if (hint != null) tint(hint, Pal.green.withValues(alpha: 0.45));
     if (session.hintFull && session.expected != null) {
       final o = originOf(session.expected!.to);
       canvas.drawRRect(
@@ -457,13 +462,13 @@ class _SquaresPainter extends CustomPainter {
           Radius.circular(sq * 0.18),
         ),
         Paint()
-          ..color = Mocha.green
+          ..color = Pal.green
           ..style = PaintingStyle.stroke
           ..strokeWidth = sq * 0.08,
       );
     }
     final sel = session.selected;
-    if (sel != null) tint(sel, Mocha.mauve.withValues(alpha: 0.45));
+    if (sel != null) tint(sel, Pal.mauve.withValues(alpha: 0.45));
     for (final d in dests) {
       final o = originOf(d) + Offset(sq / 2, sq / 2);
       final capture = session.pos.board.pieceAt(d) != null;
@@ -472,7 +477,7 @@ class _SquaresPainter extends CustomPainter {
           o,
           sq * 0.44 * destScale,
           Paint()
-            ..color = Mocha.crust.withValues(alpha: 0.38)
+            ..color = Pal.crust.withValues(alpha: 0.38)
             ..style = PaintingStyle.stroke
             ..strokeWidth = sq * 0.1,
         );
@@ -480,7 +485,7 @@ class _SquaresPainter extends CustomPainter {
         canvas.drawCircle(
           o,
           sq * 0.15 * destScale,
-          Paint()..color = Mocha.crust.withValues(alpha: 0.38),
+          Paint()..color = Pal.crust.withValues(alpha: 0.38),
         );
       }
     }
@@ -547,14 +552,14 @@ class _PromotionPicker extends StatelessWidget {
           duration: const Duration(milliseconds: 200),
           curve: Curves.easeOutBack,
           builder: (_, t, child) => Container(
-            color: Mocha.crust.withValues(alpha: 0.6 * t.clamp(0, 1)),
+            color: Pal.crust.withValues(alpha: 0.6 * t.clamp(0, 1)),
             alignment: Alignment.center,
             child: Transform.scale(scale: 0.8 + 0.2 * t, child: child),
           ),
           child: Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Mocha.mantle,
+              color: Pal.mantle,
               borderRadius: BorderRadius.circular(16),
             ),
             child: Row(

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:math' as math;
 
 import 'package:shared_preferences/shared_preferences.dart';
@@ -83,6 +84,45 @@ class Stats {
     await _prefs.setStringList('chess_seen', seen);
     return delta;
   }
+
+  // ---- Settings ------------------------------------------------------
+
+  String? get themeName => _prefs.getString('theme');
+  Future<void> setThemeName(String v) => _prefs.setString('theme', v);
+
+  bool get showMistakes => _prefs.getBool('show_mistakes') ?? true;
+  Future<void> setShowMistakes(bool v) => _prefs.setBool('show_mistakes', v);
+
+  bool get showTimer => _prefs.getBool('show_timer') ?? true;
+  Future<void> setShowTimer(bool v) => _prefs.setBool('show_timer', v);
+
+  bool get autoQueen => _prefs.getBool('auto_queen') ?? false;
+  Future<void> setAutoQueen(bool v) => _prefs.setBool('auto_queen', v);
+
+  Future<void> resetStats() async {
+    for (final k in _prefs.getKeys().toList()) {
+      if (k.startsWith('solved') || k.startsWith('best') || k.startsWith('perfect') || k.startsWith('chess_')) {
+        await _prefs.remove(k);
+      }
+    }
+  }
+
+  // ---- Saved games ---------------------------------------------------
+
+  Map<String, dynamic>? savedGame(GameMode mode) {
+    final raw = _prefs.getString('save_${mode.name}');
+    if (raw == null) return null;
+    try {
+      return jsonDecode(raw) as Map<String, dynamic>;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<void> saveGame(GameMode mode, Map<String, dynamic> data) =>
+      _prefs.setString('save_${mode.name}', jsonEncode(data));
+
+  Future<void> clearSave(GameMode mode) => _prefs.remove('save_${mode.name}');
 
   bool get haptics => _prefs.getBool('haptics') ?? true;
   Future<void> setHaptics(bool v) => _prefs.setBool('haptics', v);

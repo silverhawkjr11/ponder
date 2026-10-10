@@ -1,6 +1,6 @@
-# Dots
+# Ponder
 
-A clean, ad-free connect-the-dots (flow) puzzle for Android in the Catppuccin Mocha palette.
+Four clean, ad-free puzzles for Android in the Catppuccin palettes: Flow (connect the dots), Zip (one path through every cell), Chess puzzles (Lichess database, CC0) and Sudoku. Games autosave and can be resumed from the home screen; Mocha, Macchiato, Frappé and Latte themes.
 
 Connect every pair of matching dots with a pipe and fill every cell. Levels are generated
 randomly per difficulty, and each one shows its seed so you can replay it.

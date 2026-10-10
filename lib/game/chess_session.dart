@@ -24,14 +24,35 @@ class ChessSession extends ChangeNotifier {
   int wrongCount = 0;
   int hintsUsed = 0;
   NormalMove? pendingPromotion; // from/to awaiting a piece choice
+  final bool autoQueen;
   Timer? _timer;
 
-  ChessSession(this.puzzle) {
+  ChessSession(this.puzzle, {this.autoQueen = false, int resumeStep = 0, int wrong = 0, int hints = 0}) {
     pos = Chess.fromSetup(Setup.parseFen(puzzle.fen));
     line = [for (final m in puzzle.moves) Move.parse(m)! as NormalMove];
     userSide = pos.turn.opposite;
-    _timer = Timer(const Duration(milliseconds: 700), _playReply);
+    if (resumeStep > 0 && resumeStep < line.length) {
+      // Replay instantly up to where the player left off (always a user turn).
+      final target = resumeStep.isOdd ? resumeStep : resumeStep - 1;
+      for (var i = 0; i < target; i++) {
+        pos = pos.play(line[i]);
+        lastMove = line[i];
+      }
+      step = target;
+      wrongCount = wrong;
+      hintsUsed = hints;
+      state = PuzzleState.thinking;
+    } else {
+      _timer = Timer(const Duration(milliseconds: 700), _playReply);
+    }
   }
+
+  Map<String, dynamic> toJson() => {
+    'id': puzzle.id,
+    'step': step,
+    'wrong': wrongCount,
+    'hints': hintsUsed,
+  };
 
   @override
   void dispose() {
@@ -66,10 +87,14 @@ class ChessSession extends ChangeNotifier {
     if (sel != null && destinations(sel).contains(sq)) {
       final piece = pos.board.pieceAt(sel);
       final promo = piece?.role == Role.pawn && (sq.rank == 0 || sq.rank == 7);
-      if (promo) {
+      if (promo && !autoQueen) {
         pendingPromotion = NormalMove(from: sel, to: sq);
         selected = null;
         notifyListeners();
+        return;
+      }
+      if (promo) {
+        _attempt(NormalMove(from: sel, to: sq, promotion: Role.queen));
         return;
       }
       _attempt(NormalMove(from: sel, to: sq));

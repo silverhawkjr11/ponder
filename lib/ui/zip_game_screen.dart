@@ -7,7 +7,7 @@ import '../game/level.dart';
 import '../game/zip_board.dart';
 import '../game/zip_generator.dart';
 import '../services/stats.dart';
-import '../theme/mocha.dart';
+import '../theme/palette.dart';
 import 'confetti.dart';
 import 'game_chrome.dart';
 import 'zip_board_widget.dart';
@@ -16,13 +16,13 @@ import 'zip_board_widget.dart';
 class ZipGameScreen extends StatefulWidget {
   final Difficulty difficulty;
   final Stats stats;
-  final int? seed;
+  final Map<String, dynamic>? resume;
 
   const ZipGameScreen({
     super.key,
     required this.difficulty,
     required this.stats,
-    this.seed,
+    this.resume,
   });
 
   @override
@@ -33,7 +33,7 @@ class _ZipGameScreenState extends State<ZipGameScreen>
     with WidgetsBindingObserver {
   ZipBoard? _board;
   int _generation = 0;
-  final Stopwatch _clock = Stopwatch();
+  final GameClock _clock = GameClock();
   Timer? _tick;
   bool _showWin = false;
   bool _newBest = false;
@@ -46,25 +46,29 @@ class _ZipGameScreenState extends State<ZipGameScreen>
     _tick = Timer.periodic(const Duration(milliseconds: 500), (_) {
       if (mounted && _board != null && !_board!.won) setState(() {});
     });
-    _load(seed: widget.seed);
+    _load(resume: widget.resume);
   }
 
-  Future<void> _load({int? seed}) async {
+  Future<void> _load({Map<String, dynamic>? resume}) async {
     final gen = ++_generation;
     final old = _board;
     setState(() => _board = null);
     old?.removeListener(_onBoard);
     old?.dispose();
-    final level = await ZipGenerator.generateAsync(widget.difficulty, seed: seed);
+    if (resume == null) widget.stats.clearSave(GameMode.zip);
+    final level = await ZipGenerator.generateAsync(
+      widget.difficulty,
+      seed: resume?['seed'] as int?,
+    );
     if (!mounted || gen != _generation) return;
-    final board = ZipBoard(level)..addListener(_onBoard);
+    final board = ZipBoard(level);
+    if (resume != null) board.restore(resume);
+    board.addListener(_onBoard);
     setState(() {
       _board = board;
       _showWin = false;
       _newBest = false;
-      _clock
-        ..reset()
-        ..start();
+      _clock.reset(from: (resume?['ms'] as int?) ?? 0);
     });
   }
 
@@ -72,6 +76,7 @@ class _ZipGameScreenState extends State<ZipGameScreen>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _tick?.cancel();
+    _persist();
     _board?.removeListener(_onBoard);
     _board?.dispose();
     super.dispose();
@@ -83,21 +88,40 @@ class _ZipGameScreenState extends State<ZipGameScreen>
       if (_board != null && !_board!.won) _clock.start();
     } else {
       _clock.stop();
+      _persist();
     }
   }
 
+  void _persist() {
+    final b = _board;
+    if (b == null) return;
+    if (b.won) {
+      widget.stats.clearSave(GameMode.zip);
+      return;
+    }
+    widget.stats.saveGame(GameMode.zip, {
+      'd': widget.difficulty.name,
+      'seed': b.level.seed,
+      'ms': _clock.ms,
+      'progress': '${(b.fillFraction * 100).round()}% drawn',
+      ...b.toJson(),
+    });
+  }
+
   void _onBoard() {
-    if (mounted) setState(() {});
+    if (!mounted) return;
+    setState(() {});
+    _persist();
   }
 
   Future<void> _onWin() async {
     final board = _board!;
     _clock.stop();
-    final ms = _clock.elapsedMilliseconds;
+    widget.stats.clearSave(GameMode.zip);
     final best = await widget.stats.recordWin(
       GameMode.zip,
       widget.difficulty,
-      ms: ms,
+      ms: _clock.ms,
       perfect: board.moves == 1,
       usedHints: board.hintsUsed > 0,
     );
@@ -115,9 +139,7 @@ class _ZipGameScreenState extends State<ZipGameScreen>
     _board?.restart();
     setState(() {
       _showWin = false;
-      _clock
-        ..reset()
-        ..start();
+      _clock.reset();
     });
   }
 
@@ -140,7 +162,7 @@ class _ZipGameScreenState extends State<ZipGameScreen>
                   mode: GameMode.zip,
                   difficulty: widget.difficulty,
                   size: board?.level.size,
-                  time: formatMs(_clock.elapsedMilliseconds),
+                  time: widget.stats.showTimer ? formatMs(_clock.ms) : null,
                   seed: board?.level.seed,
                 ),
                 Expanded(
@@ -159,24 +181,24 @@ class _ZipGameScreenState extends State<ZipGameScreen>
                                 StatTile(
                                   label: 'numbers',
                                   value: '${board.reached}/${board.numberCount}',
-                                  color: Mocha.mauve,
+                                  color: Pal.mauve,
                                 ),
                                 StatTile(
                                   label: 'filled',
                                   value: '${(board.fillFraction * 100).round()}%',
-                                  color: Mocha.blue,
+                                  color: Pal.blue,
                                 ),
                                 StatTile(
                                   label: 'strokes',
                                   value: '${board.moves}',
-                                  color: Mocha.peach,
+                                  color: Pal.peach,
                                 ),
                               ],
                             ),
                           ),
                         ),
                 ),
-                const SizedBox(height: 18),
+                const SizedBox(height: 14),
                 GameButtons(
                   onRestart: board == null || won ? null : _restart,
                   onHint: board == null || won ? null : _hint,
@@ -193,7 +215,7 @@ class _ZipGameScreenState extends State<ZipGameScreen>
                       ? 'One stroke!'
                       : 'Solved!',
                   stats: [
-                    ('time', formatMs(_clock.elapsedMilliseconds)),
+                    ('time', formatMs(_clock.ms)),
                     ('strokes', '${board.moves}'),
                     ('hints', '${board.hintsUsed}'),
                   ],

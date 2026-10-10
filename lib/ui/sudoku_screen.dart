@@ -6,14 +6,20 @@ import 'package:flutter/services.dart';
 import '../game/level.dart';
 import '../game/sudoku.dart';
 import '../services/stats.dart';
-import '../theme/mocha.dart';
+import '../theme/palette.dart';
 import 'confetti.dart';
 import 'game_chrome.dart';
 
 class SudokuScreen extends StatefulWidget {
   final Difficulty difficulty;
   final Stats stats;
-  const SudokuScreen({super.key, required this.difficulty, required this.stats});
+  final Map<String, dynamic>? resume;
+  const SudokuScreen({
+    super.key,
+    required this.difficulty,
+    required this.stats,
+    this.resume,
+  });
 
   @override
   State<SudokuScreen> createState() => _SudokuScreenState();
@@ -22,7 +28,7 @@ class SudokuScreen extends StatefulWidget {
 class _SudokuScreenState extends State<SudokuScreen> with WidgetsBindingObserver {
   SudokuBoard? _board;
   int _generation = 0;
-  final Stopwatch _clock = Stopwatch();
+  final GameClock _clock = GameClock();
   Timer? _tick;
   bool _showWin = false;
   bool _newBest = false;
@@ -36,26 +42,46 @@ class _SudokuScreenState extends State<SudokuScreen> with WidgetsBindingObserver
     _tick = Timer.periodic(const Duration(milliseconds: 500), (_) {
       if (mounted && _board != null && !_board!.won) setState(() {});
     });
-    _load();
+    _load(resume: widget.resume);
   }
 
-  Future<void> _load() async {
+  Future<void> _load({Map<String, dynamic>? resume}) async {
     final gen = ++_generation;
     final old = _board;
     setState(() => _board = null);
     old?.removeListener(_onBoard);
     old?.dispose();
-    final level = await SudokuGenerator.generateAsync(widget.difficulty);
+    if (resume == null) widget.stats.clearSave(GameMode.sudoku);
+    final level = await SudokuGenerator.generateAsync(
+      widget.difficulty,
+      seed: resume?['seed'] as int?,
+    );
     if (!mounted || gen != _generation) return;
-    final board = SudokuBoard(level)..addListener(_onBoard);
+    final board = SudokuBoard(level);
+    if (resume != null) board.restore(resume);
+    board.addListener(_onBoard);
     setState(() {
       _board = board;
       _showWin = false;
       _newBest = false;
       _recorded = false;
-      _clock
-        ..reset()
-        ..start();
+      _clock.reset(from: (resume?['ms'] as int?) ?? 0);
+    });
+  }
+
+  void _persist() {
+    final b = _board;
+    if (b == null) return;
+    if (b.won) {
+      widget.stats.clearSave(GameMode.sudoku);
+      return;
+    }
+    widget.stats.saveGame(GameMode.sudoku, {
+      'd': widget.difficulty.name,
+      'seed': b.level.seed,
+      'ms': _clock.ms,
+      'progress': '${b.filled}/81 filled',
+      ...b.toJson(),
     });
   }
 
@@ -63,6 +89,7 @@ class _SudokuScreenState extends State<SudokuScreen> with WidgetsBindingObserver
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _tick?.cancel();
+    _persist();
     _board?.removeListener(_onBoard);
     _board?.dispose();
     super.dispose();
@@ -74,6 +101,7 @@ class _SudokuScreenState extends State<SudokuScreen> with WidgetsBindingObserver
       if (_board != null && !_board!.won) _clock.start();
     } else {
       _clock.stop();
+      _persist();
     }
   }
 
@@ -85,15 +113,17 @@ class _SudokuScreenState extends State<SudokuScreen> with WidgetsBindingObserver
       _onWin(b);
     }
     setState(() {});
+    _persist();
   }
 
   Future<void> _onWin(SudokuBoard b) async {
     _clock.stop();
+    widget.stats.clearSave(GameMode.sudoku);
     if (widget.stats.haptics) HapticFeedback.heavyImpact();
     final best = await widget.stats.recordWin(
       GameMode.sudoku,
       widget.difficulty,
-      ms: _clock.elapsedMilliseconds,
+      ms: _clock.ms,
       perfect: b.mistakes == 0,
       usedHints: b.hintsUsed > 0,
     );
@@ -126,7 +156,7 @@ class _SudokuScreenState extends State<SudokuScreen> with WidgetsBindingObserver
                   difficulty: widget.difficulty,
                   size: null,
                   subtitle: b == null ? 'Generating…' : '${b.level.clueCount} clues   ·   #${b.level.seed}',
-                  time: formatMs(_clock.elapsedMilliseconds),
+                  time: widget.stats.showTimer ? formatMs(_clock.ms) : null,
                   seed: null,
                 ),
                 Expanded(
@@ -134,14 +164,14 @@ class _SudokuScreenState extends State<SudokuScreen> with WidgetsBindingObserver
                       ? const GeneratingDots()
                       : LayoutBuilder(
                           builder: (context, c) {
-                            final side = (c.maxWidth - 36).clamp(0.0, c.maxHeight - 230);
+                            final side = (c.maxWidth - 20).clamp(0.0, c.maxHeight - 230);
                             return Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 SizedBox(
                                   width: side,
                                   height: side,
-                                  child: _SudokuGrid(board: b),
+                                  child: _SudokuGrid(board: b, showMistakes: widget.stats.showMistakes),
                                 ),
                                 const SizedBox(height: 18),
                                 Padding(
@@ -150,18 +180,18 @@ class _SudokuScreenState extends State<SudokuScreen> with WidgetsBindingObserver
                                     children: [
                                       StatTile(
                                         label: 'mistakes',
-                                        value: '${b.mistakes}',
-                                        color: b.mistakes == 0 ? Mocha.green : Mocha.red,
+                                        value: widget.stats.showMistakes ? '${b.mistakes}' : '·',
+                                        color: !widget.stats.showMistakes || b.mistakes == 0 ? Pal.green : Pal.red,
                                       ),
                                       StatTile(
                                         label: 'filled',
                                         value: '${b.filled}/81',
-                                        color: Mocha.blue,
+                                        color: Pal.blue,
                                       ),
                                       StatTile(
                                         label: 'hints',
                                         value: '${b.hintsUsed}',
-                                        color: Mocha.peach,
+                                        color: Pal.peach,
                                       ),
                                     ],
                                   ),
@@ -182,7 +212,7 @@ class _SudokuScreenState extends State<SudokuScreen> with WidgetsBindingObserver
                 child: WinOverlay(
                   title: b.mistakes == 0 && b.hintsUsed == 0 ? 'Flawless!' : 'Solved!',
                   stats: [
-                    ('time', formatMs(_clock.elapsedMilliseconds)),
+                    ('time', formatMs(_clock.ms)),
                     ('mistakes', '${b.mistakes}'),
                     ('hints', '${b.hintsUsed}'),
                   ],
@@ -200,7 +230,8 @@ class _SudokuScreenState extends State<SudokuScreen> with WidgetsBindingObserver
 
 class _SudokuGrid extends StatelessWidget {
   final SudokuBoard board;
-  const _SudokuGrid({required this.board});
+  final bool showMistakes;
+  const _SudokuGrid({required this.board, required this.showMistakes});
 
   @override
   Widget build(BuildContext context) {
@@ -215,7 +246,7 @@ class _SudokuGrid extends StatelessWidget {
           },
           child: CustomPaint(
             size: Size.square(cell * 9),
-            painter: _SudokuPainter(board),
+            painter: _SudokuPainter(board, showMistakes),
           ),
         );
       },
@@ -225,13 +256,14 @@ class _SudokuGrid extends StatelessWidget {
 
 class _SudokuPainter extends CustomPainter {
   final SudokuBoard board;
-  _SudokuPainter(this.board) : super(repaint: board);
+  final bool showMistakes;
+  _SudokuPainter(this.board, this.showMistakes) : super(repaint: board);
 
   @override
   void paint(Canvas canvas, Size size) {
     final cell = size.width / 9;
     final rrect = RRect.fromRectAndRadius(Offset.zero & size, Radius.circular(cell * 0.3));
-    canvas.drawRRect(rrect.inflate(cell * 0.1), Paint()..color = Mocha.mantle);
+    canvas.drawRRect(rrect.inflate(cell * 0.1), Paint()..color = Pal.mantle);
     canvas.save();
     canvas.clipRRect(rrect);
 
@@ -244,11 +276,11 @@ class _SudokuPainter extends CustomPainter {
       Color? bg;
       if (sel != null) {
         if (i == sel) {
-          bg = Mocha.mauve.withValues(alpha: 0.35);
+          bg = Pal.mauve.withValues(alpha: 0.35);
         } else if (selValue != 0 && board.values[i] == selValue) {
-          bg = Mocha.blue.withValues(alpha: 0.28);
+          bg = Pal.blue.withValues(alpha: 0.28);
         } else if (SudokuBoard.peers(sel, i)) {
-          bg = Mocha.surface0.withValues(alpha: 0.6);
+          bg = Pal.surface0.withValues(alpha: 0.6);
         }
       }
       if (bg != null) canvas.drawRect(rect, paint..color = bg);
@@ -258,7 +290,7 @@ class _SudokuPainter extends CustomPainter {
     for (var k = 0; k <= 9; k++) {
       final thick = k % 3 == 0;
       final p = Paint()
-        ..color = thick ? Mocha.subtext0 : Mocha.surface1
+        ..color = thick ? Pal.subtext0 : Pal.surface1
         ..strokeWidth = thick ? 2.5 : 1;
       canvas.drawLine(Offset(k * cell, 0), Offset(k * cell, size.height), p);
       canvas.drawLine(Offset(0, k * cell), Offset(size.width, k * cell), p);
@@ -270,14 +302,14 @@ class _SudokuPainter extends CustomPainter {
       final v = board.values[i];
       if (v != 0) {
         final given = board.isGiven(i);
-        final wrong = board.isWrong(i);
+        final wrong = showMistakes && board.isWrong(i);
         final tp = TextPainter(
           text: TextSpan(
             text: '$v',
             style: TextStyle(
               fontSize: cell * 0.55,
               fontWeight: given ? FontWeight.w800 : FontWeight.w700,
-              color: wrong ? Mocha.red : given ? Mocha.text : Mocha.lavender,
+              color: wrong ? Pal.red : given ? Pal.text : Pal.lavender,
               fontFamily: 'Nunito',
             ),
           ),
@@ -293,7 +325,7 @@ class _SudokuPainter extends CustomPainter {
               style: TextStyle(
                 fontSize: cell * 0.24,
                 fontWeight: FontWeight.w700,
-                color: selValue == n ? Mocha.blue : Mocha.overlay1,
+                color: selValue == n ? Pal.blue : Pal.overlay1,
                 fontFamily: 'Nunito',
               ),
             ),
@@ -388,7 +420,7 @@ class _Key extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Mocha.surface0,
+      color: Pal.surface0,
       borderRadius: BorderRadius.circular(12),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -401,18 +433,18 @@ class _Key extends StatelessWidget {
               children: [
                 Text(
                   label,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.w800,
-                    color: Mocha.lavender,
+                    color: Pal.lavender,
                   ),
                 ),
                 Text(
                   sub.isEmpty ? ' ' : sub,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w700,
-                    color: Mocha.overlay1,
+                    color: Pal.overlay1,
                   ),
                 ),
               ],
@@ -433,7 +465,7 @@ class _Tool extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = active ? Mocha.mauve : Mocha.subtext1;
+    final color = active ? Pal.mauve : Pal.subtext1;
     return Opacity(
       opacity: onTap == null ? 0.4 : 1,
       child: InkWell(
@@ -443,7 +475,7 @@ class _Tool extends StatelessWidget {
           width: 62,
           padding: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
-            color: active ? Mocha.mauve.withValues(alpha: 0.15) : Colors.transparent,
+            color: active ? Pal.mauve.withValues(alpha: 0.15) : Colors.transparent,
             borderRadius: BorderRadius.circular(14),
           ),
           child: Column(
