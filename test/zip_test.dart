@@ -52,11 +52,15 @@ void main() {
     expect(b.won, isTrue);
   });
 
-  test('backtracking and hint', () {
+  test('rewind only by tapping, plus hint', () {
     final l = ZipGenerator.generate(Difficulty.easy, seed: 1);
     final b = ZipBoard(l);
     b.beginDrag(l.solution[1]);
-    b.dragTo(l.solution[0]);
+    b.dragTo(l.solution[2]);
+    b.dragTo(l.solution[1]); // sliding back does nothing
+    expect(b.path.length, 3);
+    b.endDrag();
+    b.beginDrag(l.solution[0]); // tapping an earlier cell rewinds
     expect(b.path.length, 1);
     b.endDrag();
     expect(b.hint(), isTrue);

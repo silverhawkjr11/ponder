@@ -6,6 +6,9 @@ import '../theme/mocha.dart';
 import 'game_screen.dart';
 import 'widgets.dart';
 import 'zip_game_screen.dart';
+import 'chess_screen.dart';
+import 'sudoku_screen.dart';
+import '../game/chess_puzzle.dart';
 
 class HomeScreen extends StatefulWidget {
   final Stats stats;
@@ -24,9 +27,12 @@ class _HomeScreenState extends State<HomeScreen> {
     final mode = _mode;
     await Navigator.of(context).push(
       PageRouteBuilder(
-        pageBuilder: (_, a, _) => mode == GameMode.flow
-            ? GameScreen(difficulty: d, stats: widget.stats)
-            : ZipGameScreen(difficulty: d, stats: widget.stats),
+        pageBuilder: (_, a, _) => switch (mode) {
+          GameMode.flow => GameScreen(difficulty: d, stats: widget.stats),
+          GameMode.zip => ZipGameScreen(difficulty: d, stats: widget.stats),
+          GameMode.chess => ChessScreen(difficulty: d, stats: widget.stats),
+          GameMode.sudoku => SudokuScreen(difficulty: d, stats: widget.stats),
+        },
         transitionsBuilder: (_, a, _, child) => FadeTransition(
           opacity: CurvedAnimation(parent: a, curve: Curves.easeOut),
           child: SlideTransition(
@@ -83,7 +89,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 difficulty: d,
                 mode: _mode,
                 accent: accents[d]!,
-                stats: stats.of(_mode, d),
+                stats: _mode == GameMode.chess
+                    ? DifficultyStats(solved: stats.chessSolvedIn(d))
+                    : stats.of(_mode, d),
                 onTap: () => _play(d),
               ),
               const SizedBox(height: 12),
@@ -122,11 +130,24 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             const SizedBox(height: 18),
+            if (_mode == GameMode.chess)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: Center(
+                  child: Text(
+                    'Puzzle rating ${stats.chessRating}   ·   streak ${stats.chessStreak}',
+                    style: const TextStyle(
+                      color: Mocha.mauve,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
             Center(
               child: Text(
-                stats.totalSolved(_mode) == 0
+                (_mode == GameMode.chess ? stats.chessSolved : stats.totalSolved(_mode)) == 0
                     ? 'No ${_mode.label} puzzles solved yet'
-                    : '${stats.totalSolved(_mode)} ${_mode.label} puzzle${stats.totalSolved(_mode) == 1 ? '' : 's'} solved',
+                    : '${_mode == GameMode.chess ? stats.chessSolved : stats.totalSolved(_mode)} ${_mode.label} puzzle${(_mode == GameMode.chess ? stats.chessSolved : stats.totalSolved(_mode)) == 1 ? '' : 's'} solved',
                 style: const TextStyle(
                   color: Mocha.overlay1,
                   fontWeight: FontWeight.w600,
@@ -251,7 +272,12 @@ class _DifficultyCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final sizes = difficulty.sizesFor(mode).map((s) => '$s×$s').join(' · ');
+    final sizes = switch (mode) {
+      GameMode.flow || GameMode.zip =>
+        difficulty.sizesFor(mode).map((s) => '$s×$s').join(' · '),
+      GameMode.chess => 'rated ${difficulty.ratingLabel}',
+      GameMode.sudoku => '${difficulty.sudokuClues} clues',
+    };
     return MochaCard(
       onTap: onTap,
       padding: const EdgeInsets.fromLTRB(18, 16, 14, 16),
@@ -294,15 +320,16 @@ class _DifficultyCard extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(
-                stats.bestMs == null ? '—' : formatMs(stats.bestMs!),
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w800,
-                  color: stats.bestMs == null ? Mocha.overlay0 : Mocha.text,
-                  fontFeatures: const [FontFeature.tabularFigures()],
+              if (mode != GameMode.chess)
+                Text(
+                  stats.bestMs == null ? '—' : formatMs(stats.bestMs!),
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    color: stats.bestMs == null ? Mocha.overlay0 : Mocha.text,
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                  ),
                 ),
-              ),
               Text(
                 '${stats.solved} solved',
                 style: const TextStyle(
@@ -385,54 +412,59 @@ class _ModeSwitch extends StatelessWidget {
   final ValueChanged<GameMode> onChanged;
   const _ModeSwitch({required this.mode, required this.onChanged});
 
+  static const _icons = {
+    GameMode.flow: Icons.scatter_plot_rounded,
+    GameMode.zip: Icons.route_rounded,
+    GameMode.chess: Icons.castle_rounded,
+    GameMode.sudoku: Icons.grid_3x3_rounded,
+  };
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: Mocha.mantle,
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: Row(
-        children: [
-          for (final m in GameMode.values)
-            Expanded(
-              child: GestureDetector(
-                onTap: () => onChanged(m),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 180),
-                  curve: Curves.easeOut,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  decoration: BoxDecoration(
-                    color: m == mode ? Mocha.surface0 : Colors.transparent,
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        m == GameMode.flow
-                            ? Icons.scatter_plot_rounded
-                            : Icons.route_rounded,
-                        size: 18,
-                        color: m == mode ? Mocha.mauve : Mocha.overlay1,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        m.label,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w800,
-                          color: m == mode ? Mocha.text : Mocha.overlay1,
-                        ),
-                      ),
-                    ],
-                  ),
+    return GridView.count(
+      crossAxisCount: 4,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      mainAxisSpacing: 8,
+      crossAxisSpacing: 8,
+      childAspectRatio: 0.95,
+      children: [
+        for (final m in GameMode.values)
+          GestureDetector(
+            onTap: () => onChanged(m),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              curve: Curves.easeOut,
+              decoration: BoxDecoration(
+                color: m == mode ? Mocha.surface0 : Mocha.mantle,
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(
+                  color: m == mode ? Mocha.mauve.withValues(alpha: 0.6) : Colors.transparent,
+                  width: 1.5,
                 ),
               ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    _icons[m],
+                    size: 26,
+                    color: m == mode ? Mocha.mauve : Mocha.overlay1,
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    m.label,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w800,
+                      color: m == mode ? Mocha.text : Mocha.overlay1,
+                    ),
+                  ),
+                ],
+              ),
             ),
-        ],
-      ),
+          ),
+      ],
     );
   }
 }

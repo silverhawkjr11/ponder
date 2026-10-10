@@ -85,11 +85,8 @@ class ZipBoard extends ChangeNotifier {
   bool dragTo(Cell cell, {VoidCallback? onNumber}) {
     if (!_active || _won || !inBounds(cell)) return false;
     if (cell == head) return false;
-    if (_visited[cell.r][cell.c]) {
-      _truncateTo(cell);
-      notifyListeners();
-      return true;
-    }
+    // Sliding back over your own path never cuts it; tap a cell to rewind.
+    if (_visited[cell.r][cell.c]) return false;
     final steps = _lineBetween(head, cell);
     if (steps == null) return false;
     var changed = false;

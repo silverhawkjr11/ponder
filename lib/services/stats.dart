@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../game/level.dart';
@@ -48,6 +50,38 @@ class Stats {
       return true;
     }
     return false;
+  }
+
+  // ---- Chess ---------------------------------------------------------
+
+  int get chessRating => _prefs.getInt('chess_rating') ?? 1200;
+  int get chessSolved => _prefs.getInt('chess_solved') ?? 0;
+  int get chessStreak => _prefs.getInt('chess_streak') ?? 0;
+  int chessSolvedIn(Difficulty d) => _prefs.getInt('chess_solved_${d.name}') ?? 0;
+
+  Set<String> get chessSeen =>
+      (_prefs.getStringList('chess_seen') ?? const []).toSet();
+
+  /// Elo-style update against the puzzle's rating. Returns the delta.
+  Future<int> recordChess(
+    Difficulty d, {
+    required int puzzleRating,
+    required bool clean,
+    required String id,
+  }) async {
+    final r = chessRating;
+    final expected = 1 / (1 + math.pow(10, (puzzleRating - r) / 400));
+    final k = chessSolved < 20 ? 40 : 24;
+    final delta = (k * ((clean ? 1 : 0) - expected)).round();
+    await _prefs.setInt('chess_rating', r + delta);
+    await _prefs.setInt('chess_solved', chessSolved + 1);
+    await _prefs.setInt('chess_solved_${d.name}', chessSolvedIn(d) + 1);
+    await _prefs.setInt('chess_streak', clean ? chessStreak + 1 : 0);
+    final seen = _prefs.getStringList('chess_seen') ?? [];
+    seen.add(id);
+    if (seen.length > 600) seen.removeRange(0, seen.length - 600);
+    await _prefs.setStringList('chess_seen', seen);
+    return delta;
   }
 
   bool get haptics => _prefs.getBool('haptics') ?? true;

@@ -20,7 +20,9 @@ class Cell {
 
 enum GameMode {
   flow('Flow', 'Join every pair of dots'),
-  zip('Zip', 'One path, 1 to N, through every cell');
+  zip('Zip', 'One path, 1 to N, through every cell'),
+  chess('Chess', 'Find the winning move'),
+  sudoku('Sudoku', 'Every row, column and box, 1 to 9');
 
   final String label;
   final String tagline;
@@ -42,6 +44,14 @@ enum Difficulty {
 
   List<int> sizesFor(GameMode mode) =>
       mode == GameMode.flow ? sizes : [zipSize];
+
+  /// Sudoku clue counts.
+  int get sudokuClues => switch (this) {
+    Difficulty.easy => 40,
+    Difficulty.medium => 34,
+    Difficulty.hard => 29,
+    Difficulty.expert => 25,
+  };
 }
 
 /// A generated puzzle: a square grid fully covered by a set of simple paths.

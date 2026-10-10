@@ -7,17 +7,23 @@ environment:
   sdk: ^3.8.0
 
 dependencies:
+  dartchess: ^0.14.0
   flutter:
     sdk: flutter
+  flutter_svg: ^2.3.0
   shared_preferences: ^2.5.3
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  fake_async: ^1.3.3
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/pieces/
+    - assets/puzzles/puzzles.txt
   fonts:
     - family: Nunito
       fonts:

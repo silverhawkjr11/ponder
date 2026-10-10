@@ -14,6 +14,7 @@ class GameTopBar extends StatelessWidget {
   final int? size;
   final String time;
   final int? seed;
+  final String? subtitle;
   const GameTopBar({
     super.key,
     required this.mode,
@@ -21,6 +22,7 @@ class GameTopBar extends StatelessWidget {
     required this.size,
     required this.time,
     required this.seed,
+    this.subtitle,
   });
 
   @override
@@ -47,7 +49,8 @@ class GameTopBar extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  size == null ? 'Generating…' : '$size × $size   ·   #$seed',
+                  subtitle ??
+                      (size == null ? 'Generating…' : '$size × $size   ·   #$seed'),
                   style: const TextStyle(
                     color: Mocha.overlay1,
                     fontSize: 13,
@@ -160,6 +163,7 @@ class GameButtons extends StatelessWidget {
 
 class WinOverlay extends StatelessWidget {
   final String title;
+  final String? subtitle;
   final List<(String, String)> stats;
   final bool newBest;
   final VoidCallback onNext;
@@ -168,6 +172,7 @@ class WinOverlay extends StatelessWidget {
   const WinOverlay({
     super.key,
     required this.title,
+    this.subtitle,
     required this.stats,
     required this.newBest,
     required this.onNext,
@@ -210,6 +215,19 @@ class WinOverlay extends StatelessWidget {
                 title,
                 style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w800),
               ),
+              if (subtitle != null && subtitle!.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: Text(
+                    subtitle!,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Mocha.subtext0,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
               if (newBest)
                 Padding(
                   padding: const EdgeInsets.only(top: 6),
