@@ -141,11 +141,9 @@ class Board extends ChangeNotifier {
       final ep = _endpoint[next.r][next.c];
       if (ep != -1 && ep != color) break; // another color's dot blocks
       if (ep == color && next == path.first) break; // can't re-enter start
+      // Other pipes are solid: you can't cut through them by accident.
       final other = _owner[next.r][next.c];
-      if (other != -1 && other != color) {
-        // Cut the other pipe from this cell onward.
-        _truncate(other, next, exclusive: true);
-      }
+      if (other != -1 && other != color) break;
       _owner[next.r][next.c] = color;
       path.add(next);
       changed = true;

@@ -37,7 +37,7 @@ void main() {
     expect(b.ownerAt(const Cell(1, 0)), 1);
   });
 
-  test('crossing another pipe cuts it', () {
+  test('another pipe blocks instead of being cut', () {
     final b = Board(tiny());
     b.beginDrag(const Cell(1, 0));
     b.dragTo(const Cell(2, 0));
@@ -47,11 +47,9 @@ void main() {
     expect(b.isComplete(1), isTrue);
     b.beginDrag(const Cell(2, 2));
     b.dragTo(const Cell(2, 1));
-    expect(b.pathOf(1).length, 2);
-    expect(b.isComplete(1), isFalse);
-    expect(b.ownerAt(const Cell(2, 1)), 0);
-    expect(b.ownerAt(const Cell(2, 0)), 1);
-    expect(b.ownerAt(const Cell(1, 1)), 1); // dots keep their colour
+    expect(b.pathOf(0).length, 1);
+    expect(b.isComplete(1), isTrue);
+    expect(b.ownerAt(const Cell(2, 1)), 1);
   });
 
   test('backtracking trims and fast straight drags fill in cells', () {

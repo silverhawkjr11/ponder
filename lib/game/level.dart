@@ -18,17 +18,30 @@ class Cell {
   String toString() => '($r,$c)';
 }
 
-enum Difficulty {
-  easy('Easy', [5, 6]),
-  medium('Medium', [7, 8]),
-  hard('Hard', [9]),
-  expert('Expert', [10]);
+enum GameMode {
+  flow('Flow', 'Join every pair of dots'),
+  zip('Zip', 'One path, 1 to N, through every cell');
 
   final String label;
-  final List<int> sizes;
-  const Difficulty(this.label, this.sizes);
+  final String tagline;
+  const GameMode(this.label, this.tagline);
+}
+
+enum Difficulty {
+  easy('Easy', [5, 6], 5),
+  medium('Medium', [7, 8], 6),
+  hard('Hard', [9], 7),
+  expert('Expert', [10], 8);
+
+  final String label;
+  final List<int> sizes; // flow boards
+  final int zipSize;
+  const Difficulty(this.label, this.sizes, this.zipSize);
 
   int pickSize(Random rng) => sizes[rng.nextInt(sizes.length)];
+
+  List<int> sizesFor(GameMode mode) =>
+      mode == GameMode.flow ? sizes : [zipSize];
 }
 
 /// A generated puzzle: a square grid fully covered by a set of simple paths.

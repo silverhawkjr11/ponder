@@ -5,6 +5,7 @@ import '../services/stats.dart';
 import '../theme/mocha.dart';
 import 'game_screen.dart';
 import 'widgets.dart';
+import 'zip_game_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final Stats stats;
@@ -15,12 +16,17 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  late GameMode _mode = widget.stats.lastMode;
+
   Future<void> _play(Difficulty d) async {
-    await widget.stats.setLastDifficulty(d);
+    await widget.stats.setLastMode(_mode);
     if (!mounted) return;
+    final mode = _mode;
     await Navigator.of(context).push(
       PageRouteBuilder(
-        pageBuilder: (_, a, _) => GameScreen(difficulty: d, stats: widget.stats),
+        pageBuilder: (_, a, _) => mode == GameMode.flow
+            ? GameScreen(difficulty: d, stats: widget.stats)
+            : ZipGameScreen(difficulty: d, stats: widget.stats),
         transitionsBuilder: (_, a, _, child) => FadeTransition(
           opacity: CurvedAnimation(parent: a, curve: Curves.easeOut),
           child: SlideTransition(
@@ -52,12 +58,32 @@ class _HomeScreenState extends State<HomeScreen> {
           padding: const EdgeInsets.fromLTRB(22, 36, 22, 24),
           children: [
             const _Hero(),
-            const SizedBox(height: 32),
+            const SizedBox(height: 26),
+            _ModeSwitch(
+              mode: _mode,
+              onChanged: (m) {
+                setState(() => _mode = m);
+                stats.setLastMode(m);
+              },
+            ),
+            const SizedBox(height: 10),
+            Padding(
+              padding: const EdgeInsets.only(left: 4, bottom: 14),
+              child: Text(
+                _mode.tagline,
+                style: const TextStyle(
+                  color: Mocha.subtext0,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                ),
+              ),
+            ),
             for (final d in Difficulty.values) ...[
               _DifficultyCard(
                 difficulty: d,
+                mode: _mode,
                 accent: accents[d]!,
-                stats: stats.of(d),
+                stats: stats.of(_mode, d),
                 onTap: () => _play(d),
               ),
               const SizedBox(height: 12),
@@ -67,6 +93,7 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: const EdgeInsets.fromLTRB(18, 6, 8, 6),
               child: Column(
                 children: [
+                  if (_mode == GameMode.flow) ...[
                   _SettingRow(
                     icon: Icons.grid_on_rounded,
                     title: 'Fill every cell',
@@ -80,6 +107,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     },
                   ),
                   const Divider(height: 1, color: Mocha.surface0),
+                  ],
                   _SettingRow(
                     icon: Icons.vibration_rounded,
                     title: 'Haptics',
@@ -96,9 +124,9 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 18),
             Center(
               child: Text(
-                stats.totalSolved == 0
-                    ? 'No puzzles solved yet'
-                    : '${stats.totalSolved} puzzle${stats.totalSolved == 1 ? '' : 's'} solved',
+                stats.totalSolved(_mode) == 0
+                    ? 'No ${_mode.label} puzzles solved yet'
+                    : '${stats.totalSolved(_mode)} ${_mode.label} puzzle${stats.totalSolved(_mode) == 1 ? '' : 's'} solved',
                 style: const TextStyle(
                   color: Mocha.overlay1,
                   fontWeight: FontWeight.w600,
@@ -128,7 +156,7 @@ class _Hero extends StatelessWidget {
         ),
         const SizedBox(height: 6),
         Text(
-          'Connect every pair. Fill every cell.',
+          'Draw lines. Fill grids. No ads.',
           style: TextStyle(
             fontSize: 16,
             color: Mocha.subtext0,
@@ -208,12 +236,14 @@ class _HeroPainter extends CustomPainter {
 
 class _DifficultyCard extends StatelessWidget {
   final Difficulty difficulty;
+  final GameMode mode;
   final Color accent;
   final DifficultyStats stats;
   final VoidCallback onTap;
 
   const _DifficultyCard({
     required this.difficulty,
+    required this.mode,
     required this.accent,
     required this.stats,
     required this.onTap,
@@ -221,7 +251,7 @@ class _DifficultyCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final sizes = difficulty.sizes.map((s) => '$s×$s').join(' · ');
+    final sizes = difficulty.sizesFor(mode).map((s) => '$s×$s').join(' · ');
     return MochaCard(
       onTap: onTap,
       padding: const EdgeInsets.fromLTRB(18, 16, 14, 16),
@@ -344,6 +374,63 @@ class _SettingRow extends StatelessWidget {
             inactiveTrackColor: Mocha.surface0,
             onChanged: onChanged,
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ModeSwitch extends StatelessWidget {
+  final GameMode mode;
+  final ValueChanged<GameMode> onChanged;
+  const _ModeSwitch({required this.mode, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: Mocha.mantle,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Row(
+        children: [
+          for (final m in GameMode.values)
+            Expanded(
+              child: GestureDetector(
+                onTap: () => onChanged(m),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  curve: Curves.easeOut,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  decoration: BoxDecoration(
+                    color: m == mode ? Mocha.surface0 : Colors.transparent,
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        m == GameMode.flow
+                            ? Icons.scatter_plot_rounded
+                            : Icons.route_rounded,
+                        size: 18,
+                        color: m == mode ? Mocha.mauve : Mocha.overlay1,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        m.label,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                          color: m == mode ? Mocha.text : Mocha.overlay1,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );

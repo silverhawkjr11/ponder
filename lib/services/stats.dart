@@ -17,52 +17,55 @@ class Stats {
   static Future<Stats> load() async =>
       Stats._(await SharedPreferences.getInstance());
 
-  DifficultyStats of(Difficulty d) => DifficultyStats(
-    solved: _prefs.getInt('solved_${d.name}') ?? 0,
-    bestMs: _prefs.getInt('best_${d.name}'),
-    perfect: _prefs.getInt('perfect_${d.name}') ?? 0,
+  String _k(String what, GameMode mode, Difficulty d) =>
+      mode == GameMode.flow ? '${what}_${d.name}' : '${what}_zip_${d.name}';
+
+  DifficultyStats of(GameMode mode, Difficulty d) => DifficultyStats(
+    solved: _prefs.getInt(_k('solved', mode, d)) ?? 0,
+    bestMs: _prefs.getInt(_k('best', mode, d)),
+    perfect: _prefs.getInt(_k('perfect', mode, d)) ?? 0,
   );
 
-  int get totalSolved =>
-      Difficulty.values.fold(0, (acc, d) => acc + of(d).solved);
+  int totalSolved(GameMode mode) =>
+      Difficulty.values.fold(0, (acc, d) => acc + of(mode, d).solved);
 
   /// Records a win. Returns true when it set a new best time.
   Future<bool> recordWin(
+    GameMode mode,
     Difficulty d, {
     required int ms,
     required bool perfect,
     required bool usedHints,
   }) async {
-    final cur = of(d);
-    await _prefs.setInt('solved_${d.name}', cur.solved + 1);
+    final cur = of(mode, d);
+    await _prefs.setInt(_k('solved', mode, d), cur.solved + 1);
     if (perfect && !usedHints) {
-      await _prefs.setInt('perfect_${d.name}', cur.perfect + 1);
+      await _prefs.setInt(_k('perfect', mode, d), cur.perfect + 1);
     }
     if (usedHints) return false;
     if (cur.bestMs == null || ms < cur.bestMs!) {
-      await _prefs.setInt('best_${d.name}', ms);
+      await _prefs.setInt(_k('best', mode, d), ms);
       return true;
     }
     return false;
   }
 
   bool get haptics => _prefs.getBool('haptics') ?? true;
-
-  /// Classic rule on by default: the board must be completely filled.
-  bool get requireFill => _prefs.getBool('require_fill') ?? true;
-  Future<void> setRequireFill(bool v) => _prefs.setBool('require_fill', v);
   Future<void> setHaptics(bool v) => _prefs.setBool('haptics', v);
 
-  Difficulty get lastDifficulty {
-    final n = _prefs.getString('last_difficulty');
-    return Difficulty.values.firstWhere(
-      (d) => d.name == n,
-      orElse: () => Difficulty.easy,
+  /// Classic Flow rule on by default: the board must be completely filled.
+  bool get requireFill => _prefs.getBool('require_fill') ?? true;
+  Future<void> setRequireFill(bool v) => _prefs.setBool('require_fill', v);
+
+  GameMode get lastMode {
+    final n = _prefs.getString('last_mode');
+    return GameMode.values.firstWhere(
+      (m) => m.name == n,
+      orElse: () => GameMode.flow,
     );
   }
 
-  Future<void> setLastDifficulty(Difficulty d) =>
-      _prefs.setString('last_difficulty', d.name);
+  Future<void> setLastMode(GameMode m) => _prefs.setString('last_mode', m.name);
 }
 
 String formatMs(int ms) {
