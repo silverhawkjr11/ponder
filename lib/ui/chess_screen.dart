@@ -50,7 +50,10 @@ class _ChessScreenState extends State<ChessScreen> {
     old?.dispose();
     _puzzles ??= await ChessPuzzles.load();
     if (!mounted) return;
-    final puzzle = _puzzles!.pick(widget.difficulty, avoid: widget.stats.chessSeen);
+    final puzzle = _puzzles!.pick(
+      widget.difficulty,
+      avoid: widget.stats.chessSeen,
+    );
     final session = ChessSession(puzzle)..addListener(_onSession);
     setState(() {
       _session = session;
@@ -114,11 +117,12 @@ class _ChessScreenState extends State<ChessScreen> {
     final side = s.userSide == Side.white ? 'White' : 'Black';
     return switch (s.state) {
       PuzzleState.intro => 'Watch…',
-      PuzzleState.thinking => s.wrongMove != null
-          ? 'Not that one, try again'
-          : s.pos.isCheck
-              ? '$side to move — check!'
-              : '$side to move',
+      PuzzleState.thinking =>
+        s.wrongMove != null
+            ? 'Not that one, try again'
+            : s.pos.isCheck
+            ? '$side to move — check!'
+            : '$side to move',
       PuzzleState.replying => '…',
       PuzzleState.solved => 'Solved',
     };
@@ -138,7 +142,9 @@ class _ChessScreenState extends State<ChessScreen> {
                   mode: GameMode.chess,
                   difficulty: widget.difficulty,
                   size: null,
-                  subtitle: s == null ? 'Loading…' : widget.difficulty.ratingLabel,
+                  subtitle: s == null
+                      ? 'Loading…'
+                      : widget.difficulty.ratingLabel,
                   time: formatMs(_clock.elapsedMilliseconds),
                   seed: null,
                 ),
@@ -149,31 +155,49 @@ class _ChessScreenState extends State<ChessScreen> {
                           board: ChessBoardWidget(session: s),
                           stats: Column(
                             children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Dot(
-                                    s.wrongMove != null
-                                        ? Mocha.red
-                                        : s.userSide == Side.white
-                                            ? Mocha.text
-                                            : Mocha.surface2,
-                                    size: 12,
+                              AnimatedSwitcher(
+                                duration: const Duration(milliseconds: 220),
+                                transitionBuilder: (child, a) => FadeTransition(
+                                  opacity: a,
+                                  child: SlideTransition(
+                                    position: Tween(
+                                      begin: const Offset(0, 0.3),
+                                      end: Offset.zero,
+                                    ).animate(a),
+                                    child: child,
                                   ),
-                                  const SizedBox(width: 10),
-                                  Text(
-                                    _status(s),
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w700,
-                                      color: s.wrongMove != null ? Mocha.red : Mocha.text,
+                                ),
+                                child: Row(
+                                  key: ValueKey(_status(s)),
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Dot(
+                                      s.wrongMove != null
+                                          ? Mocha.red
+                                          : s.userSide == Side.white
+                                          ? Mocha.text
+                                          : Mocha.surface2,
+                                      size: 12,
                                     ),
-                                  ),
-                                ],
+                                    const SizedBox(width: 10),
+                                    Text(
+                                      _status(s),
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w700,
+                                        color: s.wrongMove != null
+                                            ? Mocha.red
+                                            : Mocha.text,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                               const SizedBox(height: 18),
                               Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 18),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 18,
+                                ),
                                 child: Row(
                                   children: [
                                     StatTile(
@@ -183,7 +207,9 @@ class _ChessScreenState extends State<ChessScreen> {
                                     ),
                                     StatTile(
                                       label: 'puzzle',
-                                      value: s.solved ? '${s.puzzle.rating}' : '?',
+                                      value: s.solved
+                                          ? '${s.puzzle.rating}'
+                                          : '?',
                                       color: Mocha.blue,
                                     ),
                                     StatTile(
@@ -212,7 +238,9 @@ class _ChessScreenState extends State<ChessScreen> {
               Positioned.fill(
                 child: WinOverlay(
                   title: s.clean ? 'Perfect!' : 'Solved',
-                  subtitle: s.puzzle.themes.map(ChessPuzzle.themeLabel).join(' · '),
+                  subtitle: s.puzzle.themes
+                      .map(ChessPuzzle.themeLabel)
+                      .join(' · '),
                   stats: [
                     ('rating', _delta >= 0 ? '+$_delta' : '$_delta'),
                     ('puzzle', '${s.puzzle.rating}'),

@@ -88,19 +88,29 @@ void main() {
       '00008;r6k/pp2r2p/4Rp1Q/3p4/8/1N1P2R1/PqP2bPP/7K b - - 0 24;f2g3 e6e7 b2b1 b3c1 b1c1 h6c1;1811;hangingPiece',
     )!;
     final s = ChessSession(p);
-    await tester.runAsync(() async {
-      await Future.delayed(const Duration(milliseconds: 900));
-      s.tap(Square.fromName('e6'));
-      await snap(
-        tester,
-        Scaffold(
-          body: Center(
-            child: SizedBox(width: 380, height: 380, child: ChessBoardWidget(session: s)),
-          ),
+    tester.view.physicalSize = const Size(440, 440);
+    tester.view.devicePixelRatio = 1;
+    final key = GlobalKey();
+    await tester.pumpWidget(MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: buildMochaTheme(),
+      home: RepaintBoundary(
+        key: key,
+        child: Scaffold(
+          body: Center(child: SizedBox(width: 400, height: 400, child: ChessBoardWidget(session: s))),
         ),
-        'chess_board',
-        const Size(420, 420),
-      );
+      ),
+    ));
+    await tester.pump(const Duration(seconds: 1)); // opponent plays
+    await tester.pump(const Duration(milliseconds: 400));
+    s.tap(Square.fromName('e6'));
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.runAsync(() async {
+      final boundary = key.currentContext!.findRenderObject() as RenderRepaintBoundary;
+      final img = await boundary.toImage(pixelRatio: 1);
+      final bytes = await img.toByteData(format: ui.ImageByteFormat.png);
+      File('/tmp/claude-1000/-home-saeed-Desktop-connect-the-dots/7fbdd83a-4904-4a4d-857a-36ed2de8372c/scratchpad/chess_board.png').writeAsBytesSync(bytes!.buffer.asUint8List());
     });
     s.dispose();
   });
