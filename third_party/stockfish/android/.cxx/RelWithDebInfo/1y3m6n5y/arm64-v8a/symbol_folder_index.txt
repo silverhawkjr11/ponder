@@ -1,1 +1,0 @@
-/home/saeed/Desktop/connect_the_dots/build/stockfish/intermediates/cxx/RelWithDebInfo/1y3m6n5y/obj/arm64-v8a

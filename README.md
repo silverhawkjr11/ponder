@@ -28,3 +28,9 @@ Layout: `lib/game` (level model, generator, board logic), `lib/ui` (screens, pai
 Play mode uses Stockfish 11 (GPLv3), vendored under `third_party/stockfish` with the Flutter FFI
 bridge from the `stockfish` pub package, compiled for arm64 only. Stockfish 11 is the last classical
 evaluation release, so no neural network file is bundled and the library is about 1 MB.
+
+## Licence and credits
+
+Ponder is free software under the GNU GPL v3 (see `LICENSE`), as required by the bundled Stockfish
+engine. Chess puzzles come from the Lichess puzzle database (CC0). Piece graphics are the cburnett
+set from Lichess (CC BY-SA 3.0). Colours are the Catppuccin palettes (MIT). Font: Nunito (OFL).
