@@ -1,0 +1,278 @@
+import 'package:flutter/material.dart';
+
+import '../game/level.dart';
+import '../services/stats.dart';
+import '../theme/mocha.dart';
+import 'game_screen.dart';
+import 'widgets.dart';
+
+class HomeScreen extends StatefulWidget {
+  final Stats stats;
+  const HomeScreen({super.key, required this.stats});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  Future<void> _play(Difficulty d) async {
+    await widget.stats.setLastDifficulty(d);
+    if (!mounted) return;
+    await Navigator.of(context).push(
+      PageRouteBuilder(
+        pageBuilder: (_, a, _) => GameScreen(difficulty: d, stats: widget.stats),
+        transitionsBuilder: (_, a, _, child) => FadeTransition(
+          opacity: CurvedAnimation(parent: a, curve: Curves.easeOut),
+          child: SlideTransition(
+            position: Tween(
+              begin: const Offset(0, 0.04),
+              end: Offset.zero,
+            ).animate(CurvedAnimation(parent: a, curve: Curves.easeOutCubic)),
+            child: child,
+          ),
+        ),
+        transitionDuration: const Duration(milliseconds: 260),
+      ),
+    );
+    if (mounted) setState(() {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final stats = widget.stats;
+    final accents = {
+      Difficulty.easy: Mocha.green,
+      Difficulty.medium: Mocha.blue,
+      Difficulty.hard: Mocha.peach,
+      Difficulty.expert: Mocha.red,
+    };
+    return Scaffold(
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(22, 36, 22, 24),
+          children: [
+            const _Hero(),
+            const SizedBox(height: 32),
+            for (final d in Difficulty.values) ...[
+              _DifficultyCard(
+                difficulty: d,
+                accent: accents[d]!,
+                stats: stats.of(d),
+                onTap: () => _play(d),
+              ),
+              const SizedBox(height: 12),
+            ],
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    stats.totalSolved == 0
+                        ? 'No puzzles solved yet'
+                        : '${stats.totalSolved} puzzle${stats.totalSolved == 1 ? '' : 's'} solved',
+                    style: const TextStyle(
+                      color: Mocha.overlay1,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                const Icon(Icons.vibration_rounded, size: 18, color: Mocha.overlay1),
+                const SizedBox(width: 4),
+                Switch(
+                  value: stats.haptics,
+                  activeThumbColor: Mocha.mauve,
+                  activeTrackColor: Mocha.mauve.withValues(alpha: 0.35),
+                  inactiveThumbColor: Mocha.overlay0,
+                  inactiveTrackColor: Mocha.surface0,
+                  onChanged: (v) async {
+                    await stats.setHaptics(v);
+                    if (mounted) setState(() {});
+                  },
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _Hero extends StatelessWidget {
+  const _Hero();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const _HeroBoard(),
+        const SizedBox(height: 22),
+        const Text(
+          'Dots',
+          style: TextStyle(fontSize: 44, fontWeight: FontWeight.w800, height: 1),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          'Connect every pair. Fill every cell.',
+          style: TextStyle(
+            fontSize: 16,
+            color: Mocha.subtext0,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// A tiny decorative solved board as the hero image.
+class _HeroBoard extends StatelessWidget {
+  const _HeroBoard();
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 110,
+      child: CustomPaint(painter: _HeroPainter()),
+    );
+  }
+}
+
+class _HeroPainter extends CustomPainter {
+  // Three little pipes drawn on a 4-row strip.
+  static const _pipes = [
+    (Mocha.mauve, [(0, 0), (0, 1), (1, 1), (1, 2), (0, 2), (0, 3)]),
+    (Mocha.blue, [(2, 0), (1, 0), (2, 1), (3, 1), (3, 2), (3, 3), (2, 3)]),
+    (Mocha.green, [(1, 3), (2, 2)]),
+  ];
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final cell = size.height / 3.2;
+    Offset at((int, int) p) =>
+        Offset(cell * (p.$2 + 0.6), cell * (p.$1 * 0.8 + 0.5));
+    final stroke = cell * 0.32;
+    for (final (color, pts) in _pipes) {
+      final path = Path()..moveTo(at(pts.first).dx, at(pts.first).dy);
+      for (final p in pts.skip(1)) {
+        path.lineTo(at(p).dx, at(p).dy);
+      }
+      canvas.drawPath(
+        path,
+        Paint()
+          ..color = color.withValues(alpha: 0.3)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = stroke * 1.8
+          ..strokeCap = StrokeCap.round
+          ..strokeJoin = StrokeJoin.round
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10),
+      );
+      canvas.drawPath(
+        path,
+        Paint()
+          ..color = color
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = stroke
+          ..strokeCap = StrokeCap.round
+          ..strokeJoin = StrokeJoin.round,
+      );
+      for (final e in [pts.first, pts.last]) {
+        canvas.drawCircle(at(e), stroke * 0.95, Paint()..color = color);
+        canvas.drawCircle(
+          at(e).translate(-stroke * 0.25, -stroke * 0.28),
+          stroke * 0.4,
+          Paint()..color = Colors.white.withValues(alpha: 0.25),
+        );
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+class _DifficultyCard extends StatelessWidget {
+  final Difficulty difficulty;
+  final Color accent;
+  final DifficultyStats stats;
+  final VoidCallback onTap;
+
+  const _DifficultyCard({
+    required this.difficulty,
+    required this.accent,
+    required this.stats,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final sizes = difficulty.sizes.map((s) => '$s×$s').join(' · ');
+    return MochaCard(
+      onTap: onTap,
+      padding: const EdgeInsets.fromLTRB(18, 16, 14, 16),
+      child: Row(
+        children: [
+          Container(
+            width: 46,
+            height: 46,
+            decoration: BoxDecoration(
+              color: accent.withValues(alpha: 0.16),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            alignment: Alignment.center,
+            child: Dot(accent, size: 16),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  difficulty.label,
+                  style: const TextStyle(
+                    fontSize: 19,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  sizes,
+                  style: const TextStyle(
+                    color: Mocha.overlay1,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                stats.bestMs == null ? '—' : formatMs(stats.bestMs!),
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                  color: stats.bestMs == null ? Mocha.overlay0 : Mocha.text,
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                ),
+              ),
+              Text(
+                '${stats.solved} solved',
+                style: const TextStyle(
+                  color: Mocha.overlay1,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(width: 10),
+          const Icon(Icons.chevron_right_rounded, color: Mocha.overlay0),
+        ],
+      ),
+    );
+  }
+}
