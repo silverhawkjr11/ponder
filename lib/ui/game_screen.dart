@@ -30,7 +30,8 @@ class GameScreen extends StatefulWidget {
 }
 
 class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
-  late Board _board;
+  Board? _board;
+  int _generation = 0;
   final Stopwatch _clock = Stopwatch();
   Timer? _tick;
   bool _showWin = false;
@@ -41,11 +42,29 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _board = Board(LevelGenerator.generate(widget.difficulty, seed: widget.seed));
-    _board.addListener(_onBoard);
-    _clock.start();
     _tick = Timer.periodic(const Duration(milliseconds: 500), (_) {
-      if (mounted && !_board.won) setState(() {});
+      if (mounted && _board != null && !_board!.won) setState(() {});
+    });
+    _load(seed: widget.seed);
+  }
+
+  Future<void> _load({int? seed}) async {
+    final gen = ++_generation;
+    final old = _board;
+    setState(() => _board = null);
+    old?.removeListener(_onBoard);
+    old?.dispose();
+    final level = await LevelGenerator.generateAsync(widget.difficulty, seed: seed);
+    if (!mounted || gen != _generation) return;
+    final board = Board(level, requireFill: widget.stats.requireFill)
+      ..addListener(_onBoard);
+    setState(() {
+      _board = board;
+      _showWin = false;
+      _newBest = false;
+      _clock
+        ..reset()
+        ..start();
     });
   }
 
@@ -53,15 +72,15 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _tick?.cancel();
-    _board.removeListener(_onBoard);
-    _board.dispose();
+    _board?.removeListener(_onBoard);
+    _board?.dispose();
     super.dispose();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      if (!_board.won) _clock.start();
+      if (_board != null && !_board!.won) _clock.start();
     } else {
       _clock.stop();
     }
@@ -72,14 +91,15 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   }
 
   Future<void> _onWin() async {
+    final board = _board!;
     _clock.stop();
     final ms = _clock.elapsedMilliseconds;
-    final perfect = _board.moves == _board.colorCount;
+    final perfect = board.moves == board.colorCount;
     final best = await widget.stats.recordWin(
       widget.difficulty,
       ms: ms,
       perfect: perfect,
-      usedHints: _board.hintsUsed > 0,
+      usedHints: board.hintsUsed > 0,
     );
     if (!mounted) return;
     setState(() {
@@ -91,22 +111,10 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     setState(() => _showWin = true);
   }
 
-  void _newLevel() {
-    _board.removeListener(_onBoard);
-    _board.dispose();
-    setState(() {
-      _board = Board(LevelGenerator.generate(widget.difficulty));
-      _board.addListener(_onBoard);
-      _showWin = false;
-      _newBest = false;
-      _clock
-        ..reset()
-        ..start();
-    });
-  }
+  void _newLevel() => _load();
 
   void _restart() {
-    _board.restart();
+    _board?.restart();
     setState(() {
       _showWin = false;
       _clock
@@ -116,14 +124,32 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   }
 
   void _hint() {
-    if (!_board.hint()) return;
+    if (_board?.hint() != true) return;
     if (widget.stats.haptics) HapticFeedback.selectionClick();
   }
 
   @override
   Widget build(BuildContext context) {
-    final level = _board.level;
-    final won = _board.won;
+    final board = _board;
+    if (board == null) {
+      return Scaffold(
+        body: SafeArea(
+          child: Column(
+            children: [
+              _TopBar(
+                difficulty: widget.difficulty,
+                size: null,
+                time: '00:00',
+                seed: null,
+              ),
+              const Expanded(child: _Loading()),
+            ],
+          ),
+        ),
+      );
+    }
+    final level = board.level;
+    final won = board.won;
     return Scaffold(
       body: SafeArea(
         child: Stack(
@@ -148,13 +174,13 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                               width: side,
                               height: side,
                               child: BoardWidget(
-                                board: _board,
+                                board: board,
                                 haptics: widget.stats.haptics,
                                 onWin: _onWin,
                               ),
                             ),
                             const SizedBox(height: 28),
-                            _StatsRow(board: _board),
+                            _StatsRow(board: board),
                           ],
                         ),
                       );
@@ -193,9 +219,9 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
               Positioned.fill(
                 child: _WinOverlay(
                   time: formatMs(_clock.elapsedMilliseconds),
-                  moves: _board.moves,
-                  colors: _board.colorCount,
-                  hints: _board.hintsUsed,
+                  moves: board.moves,
+                  colors: board.colorCount,
+                  hints: board.hintsUsed,
                   newBest: _newBest,
                   onNext: _newLevel,
                   onHome: () => Navigator.of(context).pop(),
@@ -210,9 +236,9 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
 
 class _TopBar extends StatelessWidget {
   final Difficulty difficulty;
-  final int size;
+  final int? size;
   final String time;
-  final int seed;
+  final int? seed;
   const _TopBar({
     required this.difficulty,
     required this.size,
@@ -244,7 +270,7 @@ class _TopBar extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  '$size × $size   ·   #$seed',
+                  size == null ? 'Generating…' : '$size × $size   ·   #$seed',
                   style: const TextStyle(
                     color: Mocha.overlay1,
                     fontSize: 13,
@@ -480,4 +506,52 @@ class _WinStat extends StatelessWidget {
       ),
     ],
   );
+}
+
+/// Three breathing dots while a level is generated.
+class _Loading extends StatefulWidget {
+  const _Loading();
+
+  @override
+  State<_Loading> createState() => _LoadingState();
+}
+
+class _LoadingState extends State<_Loading>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _c = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1100),
+  )..repeat();
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    const colors = [Mocha.mauve, Mocha.blue, Mocha.green];
+    return Center(
+      child: AnimatedBuilder(
+        animation: _c,
+        builder: (_, _) => Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (var i = 0; i < 3; i++)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 7),
+                child: Transform.translate(
+                  offset: Offset(
+                    0,
+                    -8 * math.sin((_c.value * 2 * math.pi) - i * 0.9).clamp(0, 1),
+                  ),
+                  child: Dot(colors[i], size: 16),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
 }

@@ -21,8 +21,8 @@ class Cell {
 enum Difficulty {
   easy('Easy', [5, 6]),
   medium('Medium', [7, 8]),
-  hard('Hard', [9, 10]),
-  expert('Expert', [11, 12]);
+  hard('Hard', [9]),
+  expert('Expert', [10]);
 
   final String label;
   final List<int> sizes;

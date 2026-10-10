@@ -6,6 +6,9 @@ import 'level.dart';
 /// the pipe drawn for each color, and the drag in progress.
 class Board extends ChangeNotifier {
   final Level level;
+
+  /// Classic rule: every cell must be covered, not just every pair joined.
+  final bool requireFill;
   late final List<List<int>> _endpoint; // color at endpoint cells, else -1
   late List<List<int>> _owner; // color at any cell, else -1
   late List<List<Cell>> _paths; // drawn pipe per color, may be empty
@@ -14,7 +17,7 @@ class Board extends ChangeNotifier {
   bool _won = false;
   int _hintsUsed = 0;
 
-  Board(this.level) {
+  Board(this.level, {this.requireFill = true}) {
     _endpoint = level.endpointGrid();
     _reset();
   }
@@ -226,7 +229,7 @@ class Board extends ChangeNotifier {
 
   void _checkWin() {
     if (completedCount != colorCount) return;
-    if (filledCount != size * size) return;
+    if (requireFill && filledCount != size * size) return;
     _won = true;
     _active = null;
   }

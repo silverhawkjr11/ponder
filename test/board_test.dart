@@ -73,4 +73,18 @@ void main() {
     expect(b.moves, 0);
     expect(b.filledCount, 4);
   });
+
+  test('relaxed rule wins once every pair is joined', () {
+    final b = Board(tiny(), requireFill: false);
+    // Red: a shortcut that leaves (0,1),(0,2),(1,2) empty is still a win.
+    b.beginDrag(const Cell(1, 0));
+    b.dragTo(const Cell(2, 0));
+    b.dragTo(const Cell(2, 1));
+    b.dragTo(const Cell(1, 1));
+    b.endDrag();
+    b.beginDrag(const Cell(0, 0));
+    b.dragTo(const Cell(0, 2));
+    b.dragTo(const Cell(2, 2));
+    expect(b.won, isTrue);
+  });
 }

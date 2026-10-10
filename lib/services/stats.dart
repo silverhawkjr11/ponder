@@ -47,6 +47,10 @@ class Stats {
   }
 
   bool get haptics => _prefs.getBool('haptics') ?? true;
+
+  /// Classic rule on by default: the board must be completely filled.
+  bool get requireFill => _prefs.getBool('require_fill') ?? true;
+  Future<void> setRequireFill(bool v) => _prefs.setBool('require_fill', v);
   Future<void> setHaptics(bool v) => _prefs.setBool('haptics', v);
 
   Difficulty get lastDifficulty {

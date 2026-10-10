@@ -63,33 +63,47 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 12),
             ],
             const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    stats.totalSolved == 0
-                        ? 'No puzzles solved yet'
-                        : '${stats.totalSolved} puzzle${stats.totalSolved == 1 ? '' : 's'} solved',
-                    style: const TextStyle(
-                      color: Mocha.overlay1,
-                      fontWeight: FontWeight.w600,
-                    ),
+            MochaCard(
+              padding: const EdgeInsets.fromLTRB(18, 6, 8, 6),
+              child: Column(
+                children: [
+                  _SettingRow(
+                    icon: Icons.grid_on_rounded,
+                    title: 'Fill every cell',
+                    subtitle: stats.requireFill
+                        ? 'Classic rule: pipes must cover the whole board'
+                        : 'Relaxed: just connect every pair',
+                    value: stats.requireFill,
+                    onChanged: (v) async {
+                      await stats.setRequireFill(v);
+                      if (mounted) setState(() {});
+                    },
                   ),
+                  const Divider(height: 1, color: Mocha.surface0),
+                  _SettingRow(
+                    icon: Icons.vibration_rounded,
+                    title: 'Haptics',
+                    subtitle: 'A tap for every connection',
+                    value: stats.haptics,
+                    onChanged: (v) async {
+                      await stats.setHaptics(v);
+                      if (mounted) setState(() {});
+                    },
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 18),
+            Center(
+              child: Text(
+                stats.totalSolved == 0
+                    ? 'No puzzles solved yet'
+                    : '${stats.totalSolved} puzzle${stats.totalSolved == 1 ? '' : 's'} solved',
+                style: const TextStyle(
+                  color: Mocha.overlay1,
+                  fontWeight: FontWeight.w600,
                 ),
-                const Icon(Icons.vibration_rounded, size: 18, color: Mocha.overlay1),
-                const SizedBox(width: 4),
-                Switch(
-                  value: stats.haptics,
-                  activeThumbColor: Mocha.mauve,
-                  activeTrackColor: Mocha.mauve.withValues(alpha: 0.35),
-                  inactiveThumbColor: Mocha.overlay0,
-                  inactiveTrackColor: Mocha.surface0,
-                  onChanged: (v) async {
-                    await stats.setHaptics(v);
-                    if (mounted) setState(() {});
-                  },
-                ),
-              ],
+              ),
             ),
           ],
         ),
@@ -271,6 +285,65 @@ class _DifficultyCard extends StatelessWidget {
           ),
           const SizedBox(width: 10),
           const Icon(Icons.chevron_right_rounded, color: Mocha.overlay0),
+        ],
+      ),
+    );
+  }
+}
+
+class _SettingRow extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  const _SettingRow({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.value,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        children: [
+          Icon(icon, size: 20, color: Mocha.subtext0),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                Text(
+                  subtitle,
+                  style: const TextStyle(
+                    fontSize: 12.5,
+                    color: Mocha.overlay1,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Switch(
+            value: value,
+            activeThumbColor: Mocha.mauve,
+            activeTrackColor: Mocha.mauve.withValues(alpha: 0.35),
+            inactiveThumbColor: Mocha.overlay0,
+            inactiveTrackColor: Mocha.surface0,
+            onChanged: onChanged,
+          ),
         ],
       ),
     );
