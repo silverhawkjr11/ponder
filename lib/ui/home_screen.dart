@@ -4,8 +4,14 @@ import '../game/chess_puzzle.dart';
 import '../game/level.dart';
 import '../services/stats.dart';
 import '../theme/palette.dart';
+import 'package:dartchess/dartchess.dart' show Side;
+
+import '../game/engine.dart';
+import 'chess_game_screen.dart';
 import 'chess_screen.dart';
+import 'daily_screen.dart';
 import 'game_screen.dart';
+import 'profile_screen.dart';
 import 'settings_screen.dart';
 import 'sudoku_screen.dart';
 import 'widgets.dart';
@@ -15,19 +21,23 @@ class HomeScreen extends StatefulWidget {
   final Stats stats;
   const HomeScreen({super.key, required this.stats});
 
+  static const modeIcons = {
+    GameMode.flow: Icons.scatter_plot_rounded,
+    GameMode.zip: Icons.route_rounded,
+    GameMode.sudoku: Icons.grid_3x3_rounded,
+    GameMode.chess: Icons.extension_rounded,
+    GameMode.play: Icons.castle_rounded,
+  };
+
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
   late GameMode _mode = widget.stats.lastMode;
+  Side? _side; // null = random
 
-  static const modeIcons = {
-    GameMode.flow: Icons.scatter_plot_rounded,
-    GameMode.zip: Icons.route_rounded,
-    GameMode.chess: Icons.castle_rounded,
-    GameMode.sudoku: Icons.grid_3x3_rounded,
-  };
+  static const modeIcons = HomeScreen.modeIcons;
 
   Widget _screenFor(GameMode mode, Difficulty d, Map<String, dynamic>? resume) =>
       switch (mode) {
@@ -35,6 +45,12 @@ class _HomeScreenState extends State<HomeScreen> {
         GameMode.zip => ZipGameScreen(difficulty: d, stats: widget.stats, resume: resume),
         GameMode.chess => ChessScreen(difficulty: d, stats: widget.stats, resume: resume),
         GameMode.sudoku => SudokuScreen(difficulty: d, stats: widget.stats, resume: resume),
+        GameMode.play => ChessGameScreen(
+          level: (resume?['level'] as int?) ?? 1,
+          side: _side,
+          stats: widget.stats,
+          resume: resume,
+        ),
       };
 
   Future<void> _open(Widget screen) async {
@@ -93,10 +109,17 @@ class _HomeScreenState extends State<HomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Expanded(child: _Hero()),
-                IconButton(
-                  onPressed: () => _open(SettingsScreen(stats: stats)),
-                  icon: Icon(Icons.settings_rounded, color: Pal.overlay1),
-                  tooltip: 'Settings',
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    IconButton(
+                      onPressed: () => _open(SettingsScreen(stats: stats)),
+                      icon: Icon(Icons.settings_rounded, color: Pal.overlay1),
+                      tooltip: 'Settings',
+                    ),
+                    const SizedBox(height: 4),
+                    _LevelChip(stats: stats, onTap: () => _open(ProfileScreen(stats: stats))),
+                  ],
                 ),
               ],
             ),
@@ -120,10 +143,12 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 18),
             _ModeSwitch(
               mode: _mode,
+              dailyDone: stats.progress.dailyDone().length,
               onChanged: (m) {
                 setState(() => _mode = m);
                 stats.setLastMode(m);
               },
+              onDaily: () => _open(DailyScreen(stats: stats)),
             ),
             const SizedBox(height: 10),
             Padding(
@@ -133,18 +158,37 @@ class _HomeScreenState extends State<HomeScreen> {
                 style: TextStyle(color: Pal.subtext0, fontWeight: FontWeight.w600, fontSize: 14),
               ),
             ),
-            for (final d in Difficulty.values) ...[
-              _DifficultyCard(
-                difficulty: d,
-                mode: _mode,
-                accent: accents[d]!,
-                stats: _mode == GameMode.chess
-                    ? DifficultyStats(solved: stats.chessSolvedIn(d))
-                    : stats.of(_mode, d),
-                onTap: () => _play(d),
-              ),
+            if (_mode == GameMode.play) ...[
+              _SidePicker(side: _side, onChanged: (s) => setState(() => _side = s)),
               const SizedBox(height: 12),
-            ],
+              for (final lvl in EngineLevel.ladder) ...[
+                _LadderCard(
+                  level: lvl,
+                  unlocked: stats.progress.aiUnlocked(lvl.number),
+                  wins: stats.progress.aiWins(lvl.number),
+                  draws: stats.progress.aiDraws(lvl.number),
+                  games: stats.progress.aiGames(lvl.number),
+                  onTap: () async {
+                    await stats.setLastMode(GameMode.play);
+                    if (!mounted) return;
+                    await _open(ChessGameScreen(level: lvl.number, side: _side, stats: stats));
+                  },
+                ),
+                const SizedBox(height: 10),
+              ],
+            ] else
+              for (final d in Difficulty.values) ...[
+                _DifficultyCard(
+                  difficulty: d,
+                  mode: _mode,
+                  accent: accents[d]!,
+                  stats: _mode == GameMode.chess
+                      ? DifficultyStats(solved: stats.chessSolvedIn(d))
+                      : stats.of(_mode, d),
+                  onTap: () => _play(d),
+                ),
+                const SizedBox(height: 12),
+              ],
             const SizedBox(height: 10),
             if (_mode == GameMode.chess)
               Padding(
@@ -169,6 +213,10 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   String _solvedLine(Stats stats) {
+    if (_mode == GameMode.play) {
+      final best = stats.progress.bestAiLevel;
+      return best == 0 ? 'Beat a level to unlock the next' : 'Best level beaten: $best';
+    }
     final n = _mode == GameMode.chess ? stats.chessSolved : stats.totalSolved(_mode);
     if (n == 0) return 'No ${_mode.label} puzzles solved yet';
     return '$n ${_mode.label} puzzle${n == 1 ? '' : 's'} solved';
@@ -389,55 +437,263 @@ class _HeroPainter extends CustomPainter {
 
 class _ModeSwitch extends StatelessWidget {
   final GameMode mode;
+  final int dailyDone;
   final ValueChanged<GameMode> onChanged;
-  const _ModeSwitch({required this.mode, required this.onChanged});
+  final VoidCallback onDaily;
+  const _ModeSwitch({
+    required this.mode,
+    required this.dailyDone,
+    required this.onChanged,
+    required this.onDaily,
+  });
 
   @override
   Widget build(BuildContext context) {
+    Widget tile({
+      required IconData icon,
+      required String label,
+      required bool selected,
+      required VoidCallback onTap,
+      String? badge,
+      Color? accent,
+    }) {
+      final c = accent ?? Pal.mauve;
+      return GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOut,
+          decoration: BoxDecoration(
+            color: selected ? Pal.surface0 : Pal.mantle,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(
+              color: selected ? c.withValues(alpha: 0.6) : Colors.transparent,
+              width: 1.5,
+            ),
+          ),
+          child: Stack(
+            children: [
+              Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(icon, size: 24, color: selected ? c : Pal.overlay1),
+                    const SizedBox(height: 5),
+                    Text(
+                      label,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w800,
+                        color: selected ? Pal.text : Pal.overlay1,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (badge != null)
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Pal.peach.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: Text(
+                      badge,
+                      style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: Pal.peach),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return GridView.count(
-      crossAxisCount: 4,
+      crossAxisCount: 3,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       mainAxisSpacing: 8,
       crossAxisSpacing: 8,
-      childAspectRatio: 0.95,
+      childAspectRatio: 1.35,
       children: [
         for (final m in GameMode.values)
-          GestureDetector(
+          tile(
+            icon: HomeScreen.modeIcons[m]!,
+            label: m.label,
+            selected: m == mode,
             onTap: () => onChanged(m),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 180),
-              curve: Curves.easeOut,
-              decoration: BoxDecoration(
-                color: m == mode ? Pal.surface0 : Pal.mantle,
-                borderRadius: BorderRadius.circular(18),
-                border: Border.all(
-                  color: m == mode ? Pal.mauve.withValues(alpha: 0.6) : Colors.transparent,
-                  width: 1.5,
+          ),
+        tile(
+          icon: Icons.today_rounded,
+          label: 'Daily',
+          selected: false,
+          accent: Pal.peach,
+          badge: dailyDone >= 4 ? '✓' : '$dailyDone/4',
+          onTap: onDaily,
+        ),
+      ],
+    );
+  }
+}
+
+class _LevelChip extends StatelessWidget {
+  final Stats stats;
+  final VoidCallback onTap;
+  const _LevelChip({required this.stats, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final p = stats.progress;
+    return Material(
+      color: Pal.mantle,
+      borderRadius: BorderRadius.circular(999),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(6, 6, 12, 6),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(color: Pal.mauve, shape: BoxShape.circle),
+                alignment: Alignment.center,
+                child: Text(
+                  '${p.level}',
+                  style: TextStyle(color: Pal.crust, fontWeight: FontWeight.w800, fontSize: 13),
                 ),
               ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    _HomeScreenState.modeIcons[m],
-                    size: 26,
-                    color: m == mode ? Pal.mauve : Pal.overlay1,
+              const SizedBox(width: 8),
+              Text(p.title, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13)),
+              if (p.streak > 0) ...[
+                const SizedBox(width: 8),
+                Text('🔥${p.streak}', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Pal.peach)),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SidePicker extends StatelessWidget {
+  final Side? side;
+  final ValueChanged<Side?> onChanged;
+  const _SidePicker({required this.side, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    final options = <(Side?, String)>[(Side.white, 'White'), (null, 'Random'), (Side.black, 'Black')];
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(color: Pal.mantle, borderRadius: BorderRadius.circular(16)),
+      child: Row(
+        children: [
+          for (final (s, label) in options)
+            Expanded(
+              child: GestureDetector(
+                onTap: () => onChanged(s),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 160),
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  decoration: BoxDecoration(
+                    color: s == side ? Pal.surface0 : Colors.transparent,
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  const SizedBox(height: 6),
-                  Text(
-                    m.label,
+                  alignment: Alignment.center,
+                  child: Text(
+                    label,
                     style: TextStyle(
-                      fontSize: 14,
                       fontWeight: FontWeight.w800,
-                      color: m == mode ? Pal.text : Pal.overlay1,
+                      fontSize: 14,
+                      color: s == side ? Pal.text : Pal.overlay1,
                     ),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LadderCard extends StatelessWidget {
+  final EngineLevel level;
+  final bool unlocked;
+  final int wins, draws, games;
+  final VoidCallback onTap;
+  const _LadderCard({
+    required this.level,
+    required this.unlocked,
+    required this.wins,
+    required this.draws,
+    required this.games,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final losses = games - wins - draws;
+    final beaten = wins > 0;
+    final accent = beaten ? Pal.green : Pal.mauve;
+    return Opacity(
+      opacity: unlocked ? 1 : 0.45,
+      child: MochaCard(
+        onTap: unlocked ? onTap : null,
+        padding: const EdgeInsets.fromLTRB(16, 12, 14, 12),
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: accent.withValues(alpha: 0.16),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              alignment: Alignment.center,
+              child: unlocked
+                  ? Text(
+                      '${level.number}',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: accent),
+                    )
+                  : Icon(Icons.lock_rounded, size: 18, color: Pal.overlay1),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Level ${level.number}', style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
+                  Text(
+                    'around ${level.elo} Elo',
+                    style: TextStyle(color: Pal.overlay1, fontWeight: FontWeight.w600, fontSize: 13),
                   ),
                 ],
               ),
             ),
-          ),
-      ],
+            if (games > 0)
+              Text(
+                '$wins-$draws-$losses',
+                style: TextStyle(
+                  fontWeight: FontWeight.w800,
+                  color: beaten ? Pal.green : Pal.subtext0,
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                ),
+              ),
+            const SizedBox(width: 8),
+            if (beaten) Icon(Icons.check_circle_rounded, color: Pal.green, size: 20)
+            else Icon(Icons.chevron_right_rounded, color: Pal.overlay0),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -464,6 +720,7 @@ class _DifficultyCard extends StatelessWidget {
         difficulty.sizesFor(mode).map((s) => '$s×$s').join(' · '),
       GameMode.chess => 'rated ${difficulty.ratingLabel}',
       GameMode.sudoku => '${difficulty.sudokuClues} clues',
+      GameMode.play => '',
     };
     return MochaCard(
       onTap: onTap,

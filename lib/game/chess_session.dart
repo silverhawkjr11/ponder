@@ -1,28 +1,36 @@
 import 'dart:async';
 
 import 'package:dartchess/dartchess.dart';
-import 'package:flutter/foundation.dart';
 
+import 'board_controller.dart';
 import 'chess_puzzle.dart';
 
 enum PuzzleState { intro, thinking, replying, solved }
 
 /// Drives one puzzle: plays the opponent's setup move, checks each of the
 /// player's moves against the solution and plays the replies.
-class ChessSession extends ChangeNotifier {
+class ChessSession extends BoardController {
   final ChessPuzzle puzzle;
+  @override
   late Position pos;
   late final List<NormalMove> line;
+  @override
   late final Side userSide;
   int step = 0;
   PuzzleState state = PuzzleState.intro;
+  @override
   Square? selected;
+  @override
   NormalMove? lastMove;
+  @override
   NormalMove? wrongMove;
+  @override
   Square? hintFrom;
+  @override
   bool hintFull = false;
   int wrongCount = 0;
   int hintsUsed = 0;
+  @override
   NormalMove? pendingPromotion; // from/to awaiting a piece choice
   final bool autoQueen;
   Timer? _timer;
@@ -60,13 +68,15 @@ class ChessSession extends ChangeNotifier {
     super.dispose();
   }
 
+  @override
   bool get userTurn =>
       state == PuzzleState.thinking && step < line.length && pos.turn == userSide;
+  @override
   bool get solved => state == PuzzleState.solved;
   bool get clean => wrongCount == 0 && hintsUsed == 0;
+  @override
   NormalMove? get expected => step < line.length ? line[step] : null;
-  Square? get checkedKing => pos.isCheck ? pos.board.kingOf(pos.turn) : null;
-
+  @override
   Set<Square> destinations(Square from) =>
       userTurn ? pos.legalMovesOf(from).squares.toSet() : const {};
 
@@ -80,6 +90,7 @@ class ChessSession extends ChangeNotifier {
     notifyListeners();
   }
 
+  @override
   void tap(Square sq) {
     if (!userTurn) return;
     wrongMove = null;
@@ -105,6 +116,7 @@ class ChessSession extends ChangeNotifier {
     notifyListeners();
   }
 
+  @override
   void promote(Role role) {
     final p = pendingPromotion;
     if (p == null) return;
@@ -112,6 +124,7 @@ class ChessSession extends ChangeNotifier {
     _attempt(p.withPromotion(role));
   }
 
+  @override
   void cancelPromotion() {
     pendingPromotion = null;
     notifyListeners();

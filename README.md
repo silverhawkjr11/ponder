@@ -22,3 +22,9 @@ flutter build apk --release
 
 Layout: `lib/game` (level model, generator, board logic), `lib/ui` (screens, painter, effects),
 `lib/theme` (Mocha palette), `lib/services` (stats persistence).
+
+## Chess engine
+
+Play mode uses Stockfish 11 (GPLv3), vendored under `third_party/stockfish` with the Flutter FFI
+bridge from the `stockfish` pub package, compiled for arm64 only. Stockfish 11 is the last classical
+evaluation release, so no neural network file is bundled and the library is about 1 MB.

@@ -1,0 +1,31 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <group android:scaleX="0.8" android:scaleY="0.8" android:pivotX="54" android:pivotY="54">
+    <!-- four tiles: flow (mauve), zip (blue), chess pawn (green), sudoku (peach) -->
+    <!-- tile backgrounds -->
+    <path android:pathData="M26,26 h24 a4,4 0 0 1 4,4 v20 a4,4 0 0 1 -4,4 h-24 a4,4 0 0 1 -4,-4 v-20 a4,4 0 0 1 4,-4 z" android:fillColor="#181825"/>
+    <path android:pathData="M58,26 h24 a4,4 0 0 1 4,4 v20 a4,4 0 0 1 -4,4 h-24 a4,4 0 0 1 -4,-4 v-20 a4,4 0 0 1 4,-4 z" android:fillColor="#181825"/>
+    <path android:pathData="M26,58 h24 a4,4 0 0 1 4,4 v20 a4,4 0 0 1 -4,4 h-24 a4,4 0 0 1 -4,-4 v-20 a4,4 0 0 1 4,-4 z" android:fillColor="#181825"/>
+    <path android:pathData="M58,58 h24 a4,4 0 0 1 4,4 v20 a4,4 0 0 1 -4,4 h-24 a4,4 0 0 1 -4,-4 v-20 a4,4 0 0 1 4,-4 z" android:fillColor="#181825"/>
+    <!-- flow: L pipe -->
+    <path android:pathData="M31,33 L45,33 L45,47" android:strokeColor="#CBA6F7" android:strokeWidth="4" android:strokeLineCap="round" android:strokeLineJoin="round"/>
+    <path android:pathData="M31,33 m-3.6,0 a3.6,3.6 0 1,0 7.2,0 a3.6,3.6 0 1,0 -7.2,0" android:fillColor="#CBA6F7"/>
+    <path android:pathData="M45,47 m-3.6,0 a3.6,3.6 0 1,0 7.2,0 a3.6,3.6 0 1,0 -7.2,0" android:fillColor="#CBA6F7"/>
+    <!-- zip: zigzag -->
+    <path android:pathData="M63,32 L77,32 L77,40 L63,40 L63,48 L77,48" android:strokeColor="#89B4FA" android:strokeWidth="3.2" android:strokeLineCap="round" android:strokeLineJoin="round"/>
+    <path android:pathData="M63,32 m-3.2,0 a3.2,3.2 0 1,0 6.4,0 a3.2,3.2 0 1,0 -6.4,0" android:fillColor="#89B4FA"/>
+    <path android:pathData="M77,48 m-3.2,0 a3.2,3.2 0 1,0 6.4,0 a3.2,3.2 0 1,0 -6.4,0" android:fillColor="#89B4FA"/>
+    <!-- chess: pawn -->
+    <path android:pathData="M38,64 m-3.4,0 a3.4,3.4 0 1,0 6.8,0 a3.4,3.4 0 1,0 -6.8,0" android:fillColor="#A6E3A1"/>
+    <path android:pathData="M34.8,68.5 L41.2,68.5 L43.4,76 L32.6,76 Z" android:fillColor="#A6E3A1"/>
+    <path android:pathData="M30.5,77.5 h15 a1.5,1.5 0 0 1 1.5,1.5 v1 a1.5,1.5 0 0 1 -1.5,1.5 h-15 a1.5,1.5 0 0 1 -1.5,-1.5 v-1 a1.5,1.5 0 0 1 1.5,-1.5 z" android:fillColor="#A6E3A1"/>
+    <!-- sudoku: 3x3 grid -->
+    <path android:pathData="M61,61 h18 v18 h-18 z M67,61 v18 M73,61 v18 M61,67 h18 M61,73 h18" android:strokeColor="#FAB387" android:strokeWidth="1.2" android:strokeAlpha="0.7"/>
+    <path android:pathData="M62.2,62.2 h3.6 v3.6 h-3.6 z" android:fillColor="#FAB387"/>
+    <path android:pathData="M74.2,68.2 h3.6 v3.6 h-3.6 z" android:fillColor="#FAB387"/>
+    <path android:pathData="M68.2,74.2 h3.6 v3.6 h-3.6 z" android:fillColor="#FAB387"/>
+    </group>
+</vector>

@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import '../game/board.dart';
 import '../game/generator.dart';
 import '../game/level.dart';
+import '../services/progress.dart';
 import '../services/stats.dart';
 import '../theme/palette.dart';
 import 'board_widget.dart';
@@ -17,12 +18,16 @@ class GameScreen extends StatefulWidget {
   final Difficulty difficulty;
   final Stats stats;
   final Map<String, dynamic>? resume;
+  final int? seed;
+  final bool daily;
 
   const GameScreen({
     super.key,
     required this.difficulty,
     required this.stats,
     this.resume,
+    this.seed,
+    this.daily = false,
   });
 
   @override
@@ -37,6 +42,9 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   bool _showWin = false;
   bool _newBest = false;
   int _confettiKey = 0;
+  Award? _award;
+  bool _daily = false;
+  bool _first = true;
 
   @override
   void initState() {
@@ -55,9 +63,12 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     old?.removeListener(_onBoard);
     old?.dispose();
     if (resume == null) widget.stats.clearSave(GameMode.flow);
+    final fixedSeed = _first && resume == null ? widget.seed : null;
+    _daily = _first && resume == null && widget.daily;
+    _first = false;
     final level = await LevelGenerator.generateAsync(
       widget.difficulty,
-      seed: resume?['seed'] as int?,
+      seed: (resume?['seed'] as int?) ?? fixedSeed,
     );
     if (!mounted || gen != _generation) return;
     final board = Board(level, requireFill: widget.stats.requireFill);
@@ -67,6 +78,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
       _board = board;
       _showWin = false;
       _newBest = false;
+      _award = null;
       _clock.reset(from: (resume?['ms'] as int?) ?? 0);
     });
   }
@@ -125,9 +137,14 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
       perfect: perfect,
       usedHints: board.hintsUsed > 0,
     );
+    final award = await widget.stats.progress.record(
+      ProgressEvent(mode: GameMode.flow, perfect: perfect, usedHints: board.hintsUsed > 0, difficulty: widget.difficulty, daily: _daily),
+      chessRating: widget.stats.chessRating,
+    );
     if (!mounted) return;
     setState(() {
       _newBest = best;
+      _award = award;
       _confettiKey++;
     });
     await Future.delayed(const Duration(milliseconds: 650));
@@ -220,6 +237,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                     ('hints', '${board.hintsUsed}'),
                   ],
                   newBest: _newBest,
+                  award: _award,
                   onNext: _load,
                   onHome: () => Navigator.of(context).pop(),
                 ),

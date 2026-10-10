@@ -151,7 +151,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 30),
           Center(
             child: Text(
-              'Ponder · puzzles by Lichess (CC0) and friends',
+              'Ponder · chess puzzles from Lichess (CC0) · engine: Stockfish 11 (GPLv3) · pieces: cburnett (CC BY-SA)',
               style: TextStyle(color: Pal.overlay0, fontWeight: FontWeight.w600, fontSize: 12),
             ),
           ),

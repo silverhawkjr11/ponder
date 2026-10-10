@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 
 import '../game/level.dart';
 import '../game/sudoku.dart';
+import '../services/progress.dart';
 import '../services/stats.dart';
 import '../theme/palette.dart';
 import 'confetti.dart';
@@ -14,11 +15,15 @@ class SudokuScreen extends StatefulWidget {
   final Difficulty difficulty;
   final Stats stats;
   final Map<String, dynamic>? resume;
+  final int? seed;
+  final bool daily;
   const SudokuScreen({
     super.key,
     required this.difficulty,
     required this.stats,
     this.resume,
+    this.seed,
+    this.daily = false,
   });
 
   @override
@@ -34,6 +39,9 @@ class _SudokuScreenState extends State<SudokuScreen> with WidgetsBindingObserver
   bool _newBest = false;
   bool _recorded = false;
   int _confettiKey = 0;
+  Award? _award;
+  bool _daily = false;
+  bool _first = true;
 
   @override
   void initState() {
@@ -52,9 +60,12 @@ class _SudokuScreenState extends State<SudokuScreen> with WidgetsBindingObserver
     old?.removeListener(_onBoard);
     old?.dispose();
     if (resume == null) widget.stats.clearSave(GameMode.sudoku);
+    final fixedSeed = _first && resume == null ? widget.seed : null;
+    _daily = _first && resume == null && widget.daily;
+    _first = false;
     final level = await SudokuGenerator.generateAsync(
       widget.difficulty,
-      seed: resume?['seed'] as int?,
+      seed: (resume?['seed'] as int?) ?? fixedSeed,
     );
     if (!mounted || gen != _generation) return;
     final board = SudokuBoard(level);
@@ -65,6 +76,7 @@ class _SudokuScreenState extends State<SudokuScreen> with WidgetsBindingObserver
       _showWin = false;
       _newBest = false;
       _recorded = false;
+      _award = null;
       _clock.reset(from: (resume?['ms'] as int?) ?? 0);
     });
   }
@@ -127,9 +139,20 @@ class _SudokuScreenState extends State<SudokuScreen> with WidgetsBindingObserver
       perfect: b.mistakes == 0,
       usedHints: b.hintsUsed > 0,
     );
+    final award = await widget.stats.progress.record(
+      ProgressEvent(
+        mode: GameMode.sudoku,
+        difficulty: widget.difficulty,
+        perfect: b.mistakes == 0,
+        usedHints: b.hintsUsed > 0,
+        daily: _daily,
+      ),
+      chessRating: widget.stats.chessRating,
+    );
     if (!mounted) return;
     setState(() {
       _newBest = best;
+      _award = award;
       _confettiKey++;
     });
     await Future.delayed(const Duration(milliseconds: 700));
@@ -217,6 +240,7 @@ class _SudokuScreenState extends State<SudokuScreen> with WidgetsBindingObserver
                     ('hints', '${b.hintsUsed}'),
                   ],
                   newBest: _newBest,
+                  award: _award,
                   onNext: _load,
                   onHome: () => Navigator.of(context).pop(),
                 ),

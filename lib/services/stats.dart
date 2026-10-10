@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../game/level.dart';
+import 'progress.dart';
 
 class DifficultyStats {
   final int solved;
@@ -14,8 +15,9 @@ class DifficultyStats {
 
 /// Tiny persistence layer: solved counts, best times, preferences.
 class Stats {
-  Stats._(this._prefs);
+  Stats._(this._prefs) : progress = Progress(_prefs);
   final SharedPreferences _prefs;
+  final Progress progress;
 
   static Future<Stats> load() async =>
       Stats._(await SharedPreferences.getInstance());
@@ -101,7 +103,9 @@ class Stats {
 
   Future<void> resetStats() async {
     for (final k in _prefs.getKeys().toList()) {
-      if (k.startsWith('solved') || k.startsWith('best') || k.startsWith('perfect') || k.startsWith('chess_')) {
+      if (k.startsWith('solved') || k.startsWith('best') || k.startsWith('perfect') || k.startsWith('chess_') ||
+          k == 'xp' || k == 'streak' || k == 'last_day' || k == 'total_solves' || k == 'achievements' ||
+          k.startsWith('ai_') || k.startsWith('daily')) {
         await _prefs.remove(k);
       }
     }

@@ -97,6 +97,12 @@ class ChessPuzzles {
     return ChessPuzzle.parse(_lines[pool[r.nextInt(pool.length)]])!;
   }
 
+  /// Same seed, same puzzle: used for the daily challenge.
+  ChessPuzzle pickDeterministic(Difficulty d, int seed) {
+    final pool = _byBand[d]!;
+    return ChessPuzzle.parse(_lines[pool[seed % pool.length]])!;
+  }
+
   ChessPuzzle? byId(String id) {
     for (final l in _lines) {
       if (l.startsWith('$id;')) return ChessPuzzle.parse(l);

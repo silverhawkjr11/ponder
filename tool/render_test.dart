@@ -13,6 +13,8 @@ import 'package:connect_the_dots/ui/chess_board_widget.dart';
 import 'package:connect_the_dots/ui/sudoku_screen.dart';
 import 'package:connect_the_dots/ui/home_screen.dart';
 import 'package:connect_the_dots/ui/settings_screen.dart';
+import 'package:connect_the_dots/ui/profile_screen.dart';
+import 'package:connect_the_dots/ui/daily_screen.dart';
 import 'package:connect_the_dots/ui/zip_board_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dartchess/dartchess.dart' show Square;
@@ -164,5 +166,16 @@ void main() {
     await tester.runAsync(() => snap(tester, HomeScreen(stats: stats), 'home_latte', const Size(430, 1180)));
     await tester.runAsync(() => snap(tester, SettingsScreen(stats: stats), 'settings_latte', const Size(430, 1180)));
     themeController.palette = Palette.mocha;
+  });
+
+  testWidgets('play ladder, profile, daily', (tester) async {
+    SharedPreferences.setMockInitialValues({
+      'last_mode': 'play', 'xp': 760, 'streak': 4, 'ai_wins_1': 2, 'ai_games_1': 3, 'ai_wins_2': 1, 'ai_games_2': 2,
+      'achievements': ['first_flow', 'first_win', 'streak_3'], 'chess_rating': 1420,
+    });
+    final stats = await Stats.load();
+    await tester.runAsync(() => snap(tester, HomeScreen(stats: stats), 'home_play', const Size(430, 1400)));
+    await tester.runAsync(() => snap(tester, ProfileScreen(stats: stats), 'profile', const Size(430, 1300)));
+    await tester.runAsync(() => snap(tester, DailyScreen(stats: stats), 'daily', const Size(430, 900)));
   });
 }

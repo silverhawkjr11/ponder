@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import '../game/chess_puzzle.dart';
 import '../game/chess_session.dart';
 import '../game/level.dart';
+import '../services/progress.dart';
 import '../services/stats.dart';
 import '../theme/palette.dart';
 import 'chess_board_widget.dart';
@@ -18,11 +19,15 @@ class ChessScreen extends StatefulWidget {
   final Difficulty difficulty;
   final Stats stats;
   final Map<String, dynamic>? resume;
+  final int? puzzleSeed;
+  final bool daily;
   const ChessScreen({
     super.key,
     required this.difficulty,
     required this.stats,
     this.resume,
+    this.puzzleSeed,
+    this.daily = false,
   });
 
   @override
@@ -39,6 +44,9 @@ class _ChessScreenState extends State<ChessScreen> with WidgetsBindingObserver {
   int _delta = 0;
   int _confettiKey = 0;
   Timer? _wrongTimer;
+  Award? _award;
+  bool _daily = false;
+  bool _first = true;
 
   @override
   void initState() {
@@ -60,6 +68,11 @@ class _ChessScreenState extends State<ChessScreen> with WidgetsBindingObserver {
     if (!mounted) return;
     ChessPuzzle? puzzle;
     if (resume != null) puzzle = _puzzles!.byId(resume['id'] as String);
+    if (puzzle == null && _first && widget.puzzleSeed != null) {
+      puzzle = _puzzles!.pickDeterministic(widget.difficulty, widget.puzzleSeed!);
+    }
+    _daily = _first && resume == null && widget.daily;
+    _first = false;
     puzzle ??= _puzzles!.pick(widget.difficulty, avoid: widget.stats.chessSeen);
     final session = ChessSession(
       puzzle,
@@ -73,6 +86,7 @@ class _ChessScreenState extends State<ChessScreen> with WidgetsBindingObserver {
       _showWin = false;
       _recorded = false;
       _delta = 0;
+      _award = null;
       _clock.reset(from: (resume?['ms'] as int?) ?? 0);
     });
   }
@@ -146,9 +160,21 @@ class _ChessScreenState extends State<ChessScreen> with WidgetsBindingObserver {
       clean: s.clean,
       id: s.puzzle.id,
     );
+    final award = await widget.stats.progress.record(
+      ProgressEvent(
+        mode: GameMode.chess,
+        difficulty: widget.difficulty,
+        perfect: s.clean,
+        usedHints: s.hintsUsed > 0,
+        puzzleRating: s.puzzle.rating,
+        daily: _daily,
+      ),
+      chessRating: widget.stats.chessRating,
+    );
     if (!mounted) return;
     setState(() {
       _delta = delta;
+      _award = award;
       if (s.clean) _confettiKey++;
     });
     await Future.delayed(const Duration(milliseconds: 900));
@@ -279,6 +305,7 @@ class _ChessScreenState extends State<ChessScreen> with WidgetsBindingObserver {
                     ('time', formatMs(_clock.ms)),
                   ],
                   newBest: false,
+                  award: _award,
                   onNext: _load,
                   onHome: () => Navigator.of(context).pop(),
                 ),

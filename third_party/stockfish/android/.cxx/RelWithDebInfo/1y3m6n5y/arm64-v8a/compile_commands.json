@@ -1,0 +1,107 @@
+[
+{
+  "directory": "/home/saeed/Desktop/connect_the_dots/third_party/stockfish/android/.cxx/RelWithDebInfo/1y3m6n5y/arm64-v8a",
+  "command": "/opt/android-sdk/ndk/28.2.13676358/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++ --target=aarch64-none-linux-android21 --sysroot=/opt/android-sdk/ndk/28.2.13676358/toolchains/llvm/prebuilt/linux-x86_64/sysroot -Dstockfish_EXPORTS -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++14 -O2 -g -DNDEBUG -fPIC -fno-exceptions -DUSE_PTHREADS -DNDEBUG -O3 -DIS_64BIT -DUSE_POPCNT -o CMakeFiles/stockfish.dir/home/saeed/Desktop/connect_the_dots/third_party/stockfish/ios/FlutterStockfish/ffi.cpp.o -c /home/saeed/Desktop/connect_the_dots/third_party/stockfish/ios/FlutterStockfish/ffi.cpp",
+  "file": "/home/saeed/Desktop/connect_the_dots/third_party/stockfish/ios/FlutterStockfish/ffi.cpp"
+},
+{
+  "directory": "/home/saeed/Desktop/connect_the_dots/third_party/stockfish/android/.cxx/RelWithDebInfo/1y3m6n5y/arm64-v8a",
+  "command": "/opt/android-sdk/ndk/28.2.13676358/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++ --target=aarch64-none-linux-android21 --sysroot=/opt/android-sdk/ndk/28.2.13676358/toolchains/llvm/prebuilt/linux-x86_64/sysroot -Dstockfish_EXPORTS -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++14 -O2 -g -DNDEBUG -fPIC -fno-exceptions -DUSE_PTHREADS -DNDEBUG -O3 -DIS_64BIT -DUSE_POPCNT -o CMakeFiles/stockfish.dir/home/saeed/Desktop/connect_the_dots/third_party/stockfish/ios/Stockfish/src/benchmark.cpp.o -c /home/saeed/Desktop/connect_the_dots/third_party/stockfish/ios/Stockfish/src/benchmark.cpp",
+  "file": "/home/saeed/Desktop/connect_the_dots/third_party/stockfish/ios/Stockfish/src/benchmark.cpp"
+},
+{
+  "directory": "/home/saeed/Desktop/connect_the_dots/third_party/stockfish/android/.cxx/RelWithDebInfo/1y3m6n5y/arm64-v8a",
+  "command": "/opt/android-sdk/ndk/28.2.13676358/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++ --target=aarch64-none-linux-android21 --sysroot=/opt/android-sdk/ndk/28.2.13676358/toolchains/llvm/prebuilt/linux-x86_64/sysroot -Dstockfish_EXPORTS -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++14 -O2 -g -DNDEBUG -fPIC -fno-exceptions -DUSE_PTHREADS -DNDEBUG -O3 -DIS_64BIT -DUSE_POPCNT -o CMakeFiles/stockfish.dir/home/saeed/Desktop/connect_the_dots/third_party/stockfish/ios/Stockfish/src/bitbase.cpp.o -c /home/saeed/Desktop/connect_the_dots/third_party/stockfish/ios/Stockfish/src/bitbase.cpp",
+  "file": "/home/saeed/Desktop/connect_the_dots/third_party/stockfish/ios/Stockfish/src/bitbase.cpp"
+},
+{
+  "directory": "/home/saeed/Desktop/connect_the_dots/third_party/stockfish/android/.cxx/RelWithDebInfo/1y3m6n5y/arm64-v8a",
+  "command": "/opt/android-sdk/ndk/28.2.13676358/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++ --target=aarch64-none-linux-android21 --sysroot=/opt/android-sdk/ndk/28.2.13676358/toolchains/llvm/prebuilt/linux-x86_64/sysroot -Dstockfish_EXPORTS -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++14 -O2 -g -DNDEBUG -fPIC -fno-exceptions -DUSE_PTHREADS -DNDEBUG -O3 -DIS_64BIT -DUSE_POPCNT -o CMakeFiles/stockfish.dir/home/saeed/Desktop/connect_the_dots/third_party/stockfish/ios/Stockfish/src/bitboard.cpp.o -c /home/saeed/Desktop/connect_the_dots/third_party/stockfish/ios/Stockfish/src/bitboard.cpp",
+  "file": "/home/saeed/Desktop/connect_the_dots/third_party/stockfish/ios/Stockfish/src/bitboard.cpp"
+},
+{
+  "directory": "/home/saeed/Desktop/connect_the_dots/third_party/stockfish/android/.cxx/RelWithDebInfo/1y3m6n5y/arm64-v8a",
+  "command": "/opt/android-sdk/ndk/28.2.13676358/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++ --target=aarch64-none-linux-android21 --sysroot=/opt/android-sdk/ndk/28.2.13676358/toolchains/llvm/prebuilt/linux-x86_64/sysroot -Dstockfish_EXPORTS -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++14 -O2 -g -DNDEBUG -fPIC -fno-exceptions -DUSE_PTHREADS -DNDEBUG -O3 -DIS_64BIT -DUSE_POPCNT -o CMakeFiles/stockfish.dir/home/saeed/Desktop/connect_the_dots/third_party/stockfish/ios/Stockfish/src/endgame.cpp.o -c /home/saeed/Desktop/connect_the_dots/third_party/stockfish/ios/Stockfish/src/endgame.cpp",
+  "file": "/home/saeed/Desktop/connect_the_dots/third_party/stockfish/ios/Stockfish/src/endgame.cpp"
+},
+{
+  "directory": "/home/saeed/Desktop/connect_the_dots/third_party/stockfish/android/.cxx/RelWithDebInfo/1y3m6n5y/arm64-v8a",
+  "command": "/opt/android-sdk/ndk/28.2.13676358/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++ --target=aarch64-none-linux-android21 --sysroot=/opt/android-sdk/ndk/28.2.13676358/toolchains/llvm/prebuilt/linux-x86_64/sysroot -Dstockfish_EXPORTS -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++14 -O2 -g -DNDEBUG -fPIC -fno-exceptions -DUSE_PTHREADS -DNDEBUG -O3 -DIS_64BIT -DUSE_POPCNT -o CMakeFiles/stockfish.dir/home/saeed/Desktop/connect_the_dots/third_party/stockfish/ios/Stockfish/src/evaluate.cpp.o -c /home/saeed/Desktop/connect_the_dots/third_party/stockfish/ios/Stockfish/src/evaluate.cpp",
+  "file": "/home/saeed/Desktop/connect_the_dots/third_party/stockfish/ios/Stockfish/src/evaluate.cpp"
+},
+{
+  "directory": "/home/saeed/Desktop/connect_the_dots/third_party/stockfish/android/.cxx/RelWithDebInfo/1y3m6n5y/arm64-v8a",
+  "command": "/opt/android-sdk/ndk/28.2.13676358/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++ --target=aarch64-none-linux-android21 --sysroot=/opt/android-sdk/ndk/28.2.13676358/toolchains/llvm/prebuilt/linux-x86_64/sysroot -Dstockfish_EXPORTS -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++14 -O2 -g -DNDEBUG -fPIC -fno-exceptions -DUSE_PTHREADS -DNDEBUG -O3 -DIS_64BIT -DUSE_POPCNT -o CMakeFiles/stockfish.dir/home/saeed/Desktop/connect_the_dots/third_party/stockfish/ios/Stockfish/src/main.cpp.o -c /home/saeed/Desktop/connect_the_dots/third_party/stockfish/ios/Stockfish/src/main.cpp",
+  "file": "/home/saeed/Desktop/connect_the_dots/third_party/stockfish/ios/Stockfish/src/main.cpp"
+},
+{
+  "directory": "/home/saeed/Desktop/connect_the_dots/third_party/stockfish/android/.cxx/RelWithDebInfo/1y3m6n5y/arm64-v8a",
+  "command": "/opt/android-sdk/ndk/28.2.13676358/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++ --target=aarch64-none-linux-android21 --sysroot=/opt/android-sdk/ndk/28.2.13676358/toolchains/llvm/prebuilt/linux-x86_64/sysroot -Dstockfish_EXPORTS -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++14 -O2 -g -DNDEBUG -fPIC -fno-exceptions -DUSE_PTHREADS -DNDEBUG -O3 -DIS_64BIT -DUSE_POPCNT -o CMakeFiles/stockfish.dir/home/saeed/Desktop/connect_the_dots/third_party/stockfish/ios/Stockfish/src/material.cpp.o -c /home/saeed/Desktop/connect_the_dots/third_party/stockfish/ios/Stockfish/src/material.cpp",
+  "file": "/home/saeed/Desktop/connect_the_dots/third_party/stockfish/ios/Stockfish/src/material.cpp"
+},
+{
+  "directory": "/home/saeed/Desktop/connect_the_dots/third_party/stockfish/android/.cxx/RelWithDebInfo/1y3m6n5y/arm64-v8a",
+  "command": "/opt/android-sdk/ndk/28.2.13676358/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++ --target=aarch64-none-linux-android21 --sysroot=/opt/android-sdk/ndk/28.2.13676358/toolchains/llvm/prebuilt/linux-x86_64/sysroot -Dstockfish_EXPORTS -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++14 -O2 -g -DNDEBUG -fPIC -fno-exceptions -DUSE_PTHREADS -DNDEBUG -O3 -DIS_64BIT -DUSE_POPCNT -o CMakeFiles/stockfish.dir/home/saeed/Desktop/connect_the_dots/third_party/stockfish/ios/Stockfish/src/misc.cpp.o -c /home/saeed/Desktop/connect_the_dots/third_party/stockfish/ios/Stockfish/src/misc.cpp",
+  "file": "/home/saeed/Desktop/connect_the_dots/third_party/stockfish/ios/Stockfish/src/misc.cpp"
+},
+{
+  "directory": "/home/saeed/Desktop/connect_the_dots/third_party/stockfish/android/.cxx/RelWithDebInfo/1y3m6n5y/arm64-v8a",
+  "command": "/opt/android-sdk/ndk/28.2.13676358/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++ --target=aarch64-none-linux-android21 --sysroot=/opt/android-sdk/ndk/28.2.13676358/toolchains/llvm/prebuilt/linux-x86_64/sysroot -Dstockfish_EXPORTS -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++14 -O2 -g -DNDEBUG -fPIC -fno-exceptions -DUSE_PTHREADS -DNDEBUG -O3 -DIS_64BIT -DUSE_POPCNT -o CMakeFiles/stockfish.dir/home/saeed/Desktop/connect_the_dots/third_party/stockfish/ios/Stockfish/src/movegen.cpp.o -c /home/saeed/Desktop/connect_the_dots/third_party/stockfish/ios/Stockfish/src/movegen.cpp",
+  "file": "/home/saeed/Desktop/connect_the_dots/third_party/stockfish/ios/Stockfish/src/movegen.cpp"
+},
+{
+  "directory": "/home/saeed/Desktop/connect_the_dots/third_party/stockfish/android/.cxx/RelWithDebInfo/1y3m6n5y/arm64-v8a",
+  "command": "/opt/android-sdk/ndk/28.2.13676358/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++ --target=aarch64-none-linux-android21 --sysroot=/opt/android-sdk/ndk/28.2.13676358/toolchains/llvm/prebuilt/linux-x86_64/sysroot -Dstockfish_EXPORTS -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++14 -O2 -g -DNDEBUG -fPIC -fno-exceptions -DUSE_PTHREADS -DNDEBUG -O3 -DIS_64BIT -DUSE_POPCNT -o CMakeFiles/stockfish.dir/home/saeed/Desktop/connect_the_dots/third_party/stockfish/ios/Stockfish/src/movepick.cpp.o -c /home/saeed/Desktop/connect_the_dots/third_party/stockfish/ios/Stockfish/src/movepick.cpp",
+  "file": "/home/saeed/Desktop/connect_the_dots/third_party/stockfish/ios/Stockfish/src/movepick.cpp"
+},
+{
+  "directory": "/home/saeed/Desktop/connect_the_dots/third_party/stockfish/android/.cxx/RelWithDebInfo/1y3m6n5y/arm64-v8a",
+  "command": "/opt/android-sdk/ndk/28.2.13676358/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++ --target=aarch64-none-linux-android21 --sysroot=/opt/android-sdk/ndk/28.2.13676358/toolchains/llvm/prebuilt/linux-x86_64/sysroot -Dstockfish_EXPORTS -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++14 -O2 -g -DNDEBUG -fPIC -fno-exceptions -DUSE_PTHREADS -DNDEBUG -O3 -DIS_64BIT -DUSE_POPCNT -o CMakeFiles/stockfish.dir/home/saeed/Desktop/connect_the_dots/third_party/stockfish/ios/Stockfish/src/pawns.cpp.o -c /home/saeed/Desktop/connect_the_dots/third_party/stockfish/ios/Stockfish/src/pawns.cpp",
+  "file": "/home/saeed/Desktop/connect_the_dots/third_party/stockfish/ios/Stockfish/src/pawns.cpp"
+},
+{
+  "directory": "/home/saeed/Desktop/connect_the_dots/third_party/stockfish/android/.cxx/RelWithDebInfo/1y3m6n5y/arm64-v8a",
+  "command": "/opt/android-sdk/ndk/28.2.13676358/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++ --target=aarch64-none-linux-android21 --sysroot=/opt/android-sdk/ndk/28.2.13676358/toolchains/llvm/prebuilt/linux-x86_64/sysroot -Dstockfish_EXPORTS -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++14 -O2 -g -DNDEBUG -fPIC -fno-exceptions -DUSE_PTHREADS -DNDEBUG -O3 -DIS_64BIT -DUSE_POPCNT -o CMakeFiles/stockfish.dir/home/saeed/Desktop/connect_the_dots/third_party/stockfish/ios/Stockfish/src/position.cpp.o -c /home/saeed/Desktop/connect_the_dots/third_party/stockfish/ios/Stockfish/src/position.cpp",
+  "file": "/home/saeed/Desktop/connect_the_dots/third_party/stockfish/ios/Stockfish/src/position.cpp"
+},
+{
+  "directory": "/home/saeed/Desktop/connect_the_dots/third_party/stockfish/android/.cxx/RelWithDebInfo/1y3m6n5y/arm64-v8a",
+  "command": "/opt/android-sdk/ndk/28.2.13676358/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++ --target=aarch64-none-linux-android21 --sysroot=/opt/android-sdk/ndk/28.2.13676358/toolchains/llvm/prebuilt/linux-x86_64/sysroot -Dstockfish_EXPORTS -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++14 -O2 -g -DNDEBUG -fPIC -fno-exceptions -DUSE_PTHREADS -DNDEBUG -O3 -DIS_64BIT -DUSE_POPCNT -o CMakeFiles/stockfish.dir/home/saeed/Desktop/connect_the_dots/third_party/stockfish/ios/Stockfish/src/psqt.cpp.o -c /home/saeed/Desktop/connect_the_dots/third_party/stockfish/ios/Stockfish/src/psqt.cpp",
+  "file": "/home/saeed/Desktop/connect_the_dots/third_party/stockfish/ios/Stockfish/src/psqt.cpp"
+},
+{
+  "directory": "/home/saeed/Desktop/connect_the_dots/third_party/stockfish/android/.cxx/RelWithDebInfo/1y3m6n5y/arm64-v8a",
+  "command": "/opt/android-sdk/ndk/28.2.13676358/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++ --target=aarch64-none-linux-android21 --sysroot=/opt/android-sdk/ndk/28.2.13676358/toolchains/llvm/prebuilt/linux-x86_64/sysroot -Dstockfish_EXPORTS -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++14 -O2 -g -DNDEBUG -fPIC -fno-exceptions -DUSE_PTHREADS -DNDEBUG -O3 -DIS_64BIT -DUSE_POPCNT -o CMakeFiles/stockfish.dir/home/saeed/Desktop/connect_the_dots/third_party/stockfish/ios/Stockfish/src/search.cpp.o -c /home/saeed/Desktop/connect_the_dots/third_party/stockfish/ios/Stockfish/src/search.cpp",
+  "file": "/home/saeed/Desktop/connect_the_dots/third_party/stockfish/ios/Stockfish/src/search.cpp"
+},
+{
+  "directory": "/home/saeed/Desktop/connect_the_dots/third_party/stockfish/android/.cxx/RelWithDebInfo/1y3m6n5y/arm64-v8a",
+  "command": "/opt/android-sdk/ndk/28.2.13676358/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++ --target=aarch64-none-linux-android21 --sysroot=/opt/android-sdk/ndk/28.2.13676358/toolchains/llvm/prebuilt/linux-x86_64/sysroot -Dstockfish_EXPORTS -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++14 -O2 -g -DNDEBUG -fPIC -fno-exceptions -DUSE_PTHREADS -DNDEBUG -O3 -DIS_64BIT -DUSE_POPCNT -o CMakeFiles/stockfish.dir/home/saeed/Desktop/connect_the_dots/third_party/stockfish/ios/Stockfish/src/syzygy/tbprobe.cpp.o -c /home/saeed/Desktop/connect_the_dots/third_party/stockfish/ios/Stockfish/src/syzygy/tbprobe.cpp",
+  "file": "/home/saeed/Desktop/connect_the_dots/third_party/stockfish/ios/Stockfish/src/syzygy/tbprobe.cpp"
+},
+{
+  "directory": "/home/saeed/Desktop/connect_the_dots/third_party/stockfish/android/.cxx/RelWithDebInfo/1y3m6n5y/arm64-v8a",
+  "command": "/opt/android-sdk/ndk/28.2.13676358/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++ --target=aarch64-none-linux-android21 --sysroot=/opt/android-sdk/ndk/28.2.13676358/toolchains/llvm/prebuilt/linux-x86_64/sysroot -Dstockfish_EXPORTS -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++14 -O2 -g -DNDEBUG -fPIC -fno-exceptions -DUSE_PTHREADS -DNDEBUG -O3 -DIS_64BIT -DUSE_POPCNT -o CMakeFiles/stockfish.dir/home/saeed/Desktop/connect_the_dots/third_party/stockfish/ios/Stockfish/src/thread.cpp.o -c /home/saeed/Desktop/connect_the_dots/third_party/stockfish/ios/Stockfish/src/thread.cpp",
+  "file": "/home/saeed/Desktop/connect_the_dots/third_party/stockfish/ios/Stockfish/src/thread.cpp"
+},
+{
+  "directory": "/home/saeed/Desktop/connect_the_dots/third_party/stockfish/android/.cxx/RelWithDebInfo/1y3m6n5y/arm64-v8a",
+  "command": "/opt/android-sdk/ndk/28.2.13676358/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++ --target=aarch64-none-linux-android21 --sysroot=/opt/android-sdk/ndk/28.2.13676358/toolchains/llvm/prebuilt/linux-x86_64/sysroot -Dstockfish_EXPORTS -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++14 -O2 -g -DNDEBUG -fPIC -fno-exceptions -DUSE_PTHREADS -DNDEBUG -O3 -DIS_64BIT -DUSE_POPCNT -o CMakeFiles/stockfish.dir/home/saeed/Desktop/connect_the_dots/third_party/stockfish/ios/Stockfish/src/timeman.cpp.o -c /home/saeed/Desktop/connect_the_dots/third_party/stockfish/ios/Stockfish/src/timeman.cpp",
+  "file": "/home/saeed/Desktop/connect_the_dots/third_party/stockfish/ios/Stockfish/src/timeman.cpp"
+},
+{
+  "directory": "/home/saeed/Desktop/connect_the_dots/third_party/stockfish/android/.cxx/RelWithDebInfo/1y3m6n5y/arm64-v8a",
+  "command": "/opt/android-sdk/ndk/28.2.13676358/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++ --target=aarch64-none-linux-android21 --sysroot=/opt/android-sdk/ndk/28.2.13676358/toolchains/llvm/prebuilt/linux-x86_64/sysroot -Dstockfish_EXPORTS -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++14 -O2 -g -DNDEBUG -fPIC -fno-exceptions -DUSE_PTHREADS -DNDEBUG -O3 -DIS_64BIT -DUSE_POPCNT -o CMakeFiles/stockfish.dir/home/saeed/Desktop/connect_the_dots/third_party/stockfish/ios/Stockfish/src/tt.cpp.o -c /home/saeed/Desktop/connect_the_dots/third_party/stockfish/ios/Stockfish/src/tt.cpp",
+  "file": "/home/saeed/Desktop/connect_the_dots/third_party/stockfish/ios/Stockfish/src/tt.cpp"
+},
+{
+  "directory": "/home/saeed/Desktop/connect_the_dots/third_party/stockfish/android/.cxx/RelWithDebInfo/1y3m6n5y/arm64-v8a",
+  "command": "/opt/android-sdk/ndk/28.2.13676358/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++ --target=aarch64-none-linux-android21 --sysroot=/opt/android-sdk/ndk/28.2.13676358/toolchains/llvm/prebuilt/linux-x86_64/sysroot -Dstockfish_EXPORTS -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++14 -O2 -g -DNDEBUG -fPIC -fno-exceptions -DUSE_PTHREADS -DNDEBUG -O3 -DIS_64BIT -DUSE_POPCNT -o CMakeFiles/stockfish.dir/home/saeed/Desktop/connect_the_dots/third_party/stockfish/ios/Stockfish/src/uci.cpp.o -c /home/saeed/Desktop/connect_the_dots/third_party/stockfish/ios/Stockfish/src/uci.cpp",
+  "file": "/home/saeed/Desktop/connect_the_dots/third_party/stockfish/ios/Stockfish/src/uci.cpp"
+},
+{
+  "directory": "/home/saeed/Desktop/connect_the_dots/third_party/stockfish/android/.cxx/RelWithDebInfo/1y3m6n5y/arm64-v8a",
+  "command": "/opt/android-sdk/ndk/28.2.13676358/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++ --target=aarch64-none-linux-android21 --sysroot=/opt/android-sdk/ndk/28.2.13676358/toolchains/llvm/prebuilt/linux-x86_64/sysroot -Dstockfish_EXPORTS -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++14 -O2 -g -DNDEBUG -fPIC -fno-exceptions -DUSE_PTHREADS -DNDEBUG -O3 -DIS_64BIT -DUSE_POPCNT -o CMakeFiles/stockfish.dir/home/saeed/Desktop/connect_the_dots/third_party/stockfish/ios/Stockfish/src/ucioption.cpp.o -c /home/saeed/Desktop/connect_the_dots/third_party/stockfish/ios/Stockfish/src/ucioption.cpp",
+  "file": "/home/saeed/Desktop/connect_the_dots/third_party/stockfish/ios/Stockfish/src/ucioption.cpp"
+}
+]

@@ -12,6 +12,8 @@ dependencies:
     sdk: flutter
   flutter_svg: ^2.3.0
   shared_preferences: ^2.5.3
+  stockfish:
+    path: third_party/stockfish
 
 dev_dependencies:
   flutter_test:

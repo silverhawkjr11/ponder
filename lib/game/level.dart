@@ -21,8 +21,9 @@ class Cell {
 enum GameMode {
   flow('Flow', 'Join every pair of dots'),
   zip('Zip', 'One path, 1 to N, through every cell'),
-  chess('Chess', 'Find the winning move'),
-  sudoku('Sudoku', 'Every row, column and box, 1 to 9');
+  chess('Puzzles', 'Find the winning move'),
+  sudoku('Sudoku', 'Every row, column and box, 1 to 9'),
+  play('Play', 'A full game against the engine');
 
   final String label;
   final String tagline;

@@ -4,13 +4,13 @@ import 'package:dartchess/dartchess.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-import '../game/chess_session.dart';
+import '../game/board_controller.dart';
 import '../theme/palette.dart';
 
 /// Animated chess board: pieces slide, captures fade, selection lifts the
 /// piece, wrong moves shake the board, check pulses, and the solved line glows.
 class ChessBoardWidget extends StatefulWidget {
-  final ChessSession session;
+  final BoardController session;
   const ChessBoardWidget({super.key, required this.session});
 
   static Color get light => Pal.p.light
@@ -389,7 +389,7 @@ class _Ghost extends StatelessWidget {
 }
 
 class _SquaresPainter extends CustomPainter {
-  final ChessSession session;
+  final BoardController session;
   final bool flipped;
   final Offset Function(Square) originOf;
   final Set<Square> dests;
@@ -537,7 +537,7 @@ class _SquaresPainter extends CustomPainter {
 }
 
 class _PromotionPicker extends StatelessWidget {
-  final ChessSession session;
+  final BoardController session;
   final double square;
   const _PromotionPicker({required this.session, required this.square});
 

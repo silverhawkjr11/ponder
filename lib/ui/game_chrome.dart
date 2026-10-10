@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../game/level.dart';
+import '../services/progress.dart';
 import '../theme/palette.dart';
 import 'widgets.dart';
 
@@ -15,6 +16,7 @@ class GameTopBar extends StatelessWidget {
   final String? time;
   final int? seed;
   final String? subtitle;
+  final String? title;
   const GameTopBar({
     super.key,
     required this.mode,
@@ -23,6 +25,7 @@ class GameTopBar extends StatelessWidget {
     required this.time,
     required this.seed,
     this.subtitle,
+    this.title,
   });
 
   @override
@@ -42,7 +45,7 @@ class GameTopBar extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '${mode.label} · ${difficulty.label}',
+                  title ?? '${mode.label} · ${difficulty.label}',
                   style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w800,
@@ -167,6 +170,8 @@ class WinOverlay extends StatelessWidget {
   final String? subtitle;
   final List<(String, String)> stats;
   final bool newBest;
+  final Award? award;
+  final String nextLabel;
   final VoidCallback onNext;
   final VoidCallback onHome;
 
@@ -176,6 +181,8 @@ class WinOverlay extends StatelessWidget {
     this.subtitle,
     required this.stats,
     required this.newBest,
+    this.award,
+    this.nextLabel = 'Next puzzle',
     required this.onNext,
     required this.onHome,
   });
@@ -275,12 +282,27 @@ class WinOverlay extends StatelessWidget {
                     ),
                 ],
               ),
+              if (award != null) ...[
+                const SizedBox(height: 18),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  alignment: WrapAlignment.center,
+                  children: [
+                    _Chip('+${award!.xp} XP', Pal.mauve),
+                    if (award!.leveledUp)
+                      _Chip('Level ${award!.levelAfter} · ${Progress.titleFor(award!.levelAfter)}', Pal.yellow),
+                    if (award!.dailyComplete) _Chip('Daily complete +100', Pal.green),
+                    for (final a in award!.unlocked) _Chip('${a.emoji} ${a.title}', Pal.teal),
+                  ],
+                ),
+              ],
               const SizedBox(height: 24),
               SizedBox(
                 width: double.infinity,
                 child: PillButton(
                   icon: Icons.arrow_forward_rounded,
-                  label: 'Next puzzle',
+                  label: nextLabel,
                   color: Pal.mauve,
                   foreground: Pal.crust,
                   onPressed: onNext,
@@ -393,4 +415,23 @@ class GameClock {
       ..reset()
       ..start();
   }
+}
+
+class _Chip extends StatelessWidget {
+  final String text;
+  final Color color;
+  const _Chip(this.text, this.color);
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+    decoration: BoxDecoration(
+      color: color.withValues(alpha: 0.18),
+      borderRadius: BorderRadius.circular(999),
+    ),
+    child: Text(
+      text,
+      style: TextStyle(color: color, fontWeight: FontWeight.w800, fontSize: 13),
+    ),
+  );
 }
